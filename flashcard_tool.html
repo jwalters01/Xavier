@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #27ae60;
+    --green-light: #d5f5e3;
+    --green-dark: #1a5e35;
+    --blue: #2980b9;
+    --blue-light: #d6eaf8;
+    --blue-dark: #1a4a6e;
+    --orange: #e67e22;
+    --orange-light: #fdebd0;
+    --orange-dark: #784212;
+    --purple: #8e44ad;
+    --purple-light: #e8daef;
+    --purple-dark: #5b2c6f;
+    --red: #c0392b;
+    --red-light: #fadbd8;
+    --red-dark: #7b241c;
+    --teal: #16a085;
+    --teal-light: #d1f2eb;
+    --teal-dark: #0e6655;
+    --bg: #f0f2f8;
+    --text: #1a1a2e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    color: white;
+    padding: 24px 20px 16px;
+    text-align: center;
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    margin-bottom: 4px;
+  }
+  header p { font-size: 0.9rem; opacity: 0.7; font-weight: 600; }
+
+  /* TOPIC NAV */
+  nav {
+    display: flex;
+    overflow-x: auto;
+    background: #0f3460;
+    padding: 8px 12px;
+    gap: 8px;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+
+  .topic-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 8px 14px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+  }
+  .topic-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .topic-btn.active { color: white; border-color: white; background: rgba(255,255,255,0.2); }
+
+  /* MAIN */
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
+
+  .topic-section { display: none; }
+  .topic-section.active { display: block; }
+
+  /* TOPIC HEADER */
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .topic-icon {
+    font-size: 2rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .topic-title { font-family: 'Fredoka One', cursive; font-size: 1.5rem; }
+  .topic-sub { font-size: 0.82rem; font-weight: 600; opacity: 0.6; }
+
+  /* PROGRESS */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: #dde0ec;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-weight: 800;
+    font-size: 0.85rem;
+    min-width: 60px;
+    text-align: right;
+    opacity: 0.6;
+  }
+
+  /* CARD */
+  .card-wrap {
+    perspective: 1000px;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+
+  .card {
+    width: 100%;
+    min-height: 240px;
+    border-radius: 20px;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.12);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 0.08s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:active { transform: scale(0.98); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    opacity: 0.08;
+    background: currentColor;
+  }
+
+  .card-side-label {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.45;
+  }
+
+  .card-number {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    opacity: 0.35;
+  }
+
+  .card-content {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.55;
+    max-width: 480px;
+  }
+
+  .card-tap-hint {
+    margin-top: 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    opacity: 0.4;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-flip { background: #1a1a2e; color: white; }
+  .btn-prev { background: #dde0ec; color: #1a1a2e; }
+  .btn-next { color: white; }
+  .btn-shuffle { background: #dde0ec; color: #1a1a2e; font-size: 0.8rem; }
+
+  /* SCORE BADGES */
+  .score-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .score-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .score-btn:hover { transform: translateY(-1px); }
+  .btn-got-it   { background: #d5f5e3; color: #1a5e35; }
+  .btn-not-yet  { background: #fadbd8; color: #7b241c; }
+
+  .score-display {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+
+  /* COLOUR THEMES */
+  .t-green  .card { background: var(--green-light);  color: var(--green-dark); }
+  .t-green  .progress-fill { background: var(--green); }
+  .t-green  .btn-next { background: var(--green); }
+  .t-green  .topic-icon { background: var(--green-light); }
+  .t-green  .topic-title { color: var(--green-dark); }
+
+  .t-blue   .card { background: var(--blue-light);   color: var(--blue-dark); }
+  .t-blue   .progress-fill { background: var(--blue); }
+  .t-blue   .btn-next { background: var(--blue); }
+  .t-blue   .topic-icon { background: var(--blue-light); }
+  .t-blue   .topic-title { color: var(--blue-dark); }
+
+  .t-orange .card { background: var(--orange-light); color: var(--orange-dark); }
+  .t-orange .progress-fill { background: var(--orange); }
+  .t-orange .btn-next { background: var(--orange); }
+  .t-orange .topic-icon { background: var(--orange-light); }
+  .t-orange .topic-title { color: var(--orange-dark); }
+
+  .t-purple .card { background: var(--purple-light); color: var(--purple-dark); }
+  .t-purple .progress-fill { background: var(--purple); }
+  .t-purple .btn-next { background: var(--purple); }
+  .t-purple .topic-icon { background: var(--purple-light); }
+  .t-purple .topic-title { color: var(--purple-dark); }
+
+  .t-red    .card { background: var(--red-light);    color: var(--red-dark); }
+  .t-red    .progress-fill { background: var(--red); }
+  .t-red    .btn-next { background: var(--red); }
+  .t-red    .topic-icon { background: var(--red-light); }
+  .t-red    .topic-title { color: var(--red-dark); }
+
+  .t-teal   .card { background: var(--teal-light);   color: var(--teal-dark); }
+  .t-teal   .progress-fill { background: var(--teal); }
+  .t-teal   .btn-next { background: var(--teal); }
+  .t-teal   .topic-icon { background: var(--teal-light); }
+  .t-teal   .topic-title { color: var(--teal-dark); }
+
+  /* ANSWER panel */
+  .answer-panel {
+    display: none;
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border-left: 5px solid;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .answer-panel.visible { display: block; }
+  .answer-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.5;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .card-content { font-size: 1.05rem; }
+    header h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔬 Science Flashcards</h1>
+  <p>One question at a time — tap to reveal the answer</p>
+</header>
+
+<nav id="topicNav"></nav>
+
+<main id="mainContent"></main>
+
+<script>
+const TOPICS = [
+  {
+    id: 'plant',
+    label: '🌿 Plant Nutrition',
+    icon: '🌿',
+    title: 'Plant Nutrition',
+    sub: 'Card 17 — Plants & Ecosystems',
+    theme: 't-green',
+    cards: [
+      { q: "What part of a plant absorbs water?", a: "The roots." },
+      { q: "In which part of a plant does most photosynthesis take place?", a: "The leaves." },
+      { q: "Photosynthesis produces glucose. Is glucose a protein, a carbohydrate or a lipid?", a: "A carbohydrate." },
+      { q: "Give two things that plants absorb from the soil.", a: "Water and minerals." },
+      { q: "In the word equation for photosynthesis, what does A represent?\nA + water → (chlorophyll) → glucose + C", a: "A = carbon dioxide." },
+      { q: "In the word equation for photosynthesis, what does C represent?\nA + water → (chlorophyll) → glucose + C", a: "C = oxygen." },
+      { q: "Why is chlorophyll needed for photosynthesis?", a: "Chlorophyll absorbs sunlight and uses the energy to convert carbon dioxide and water into glucose and oxygen." },
+      { q: "Give three ways that a leaf is adapted to carry out photosynthesis.", a: "Broad shape for large surface area; chloroplasts near the top for most light; stomata on underside to let carbon dioxide in." },
+    ]
+  },
+  {
+    id: 'depend',
+    label: '🌍 Dependence',
+    icon: '🌍',
+    title: 'Dependence on Other Organisms',
+    sub: 'Card 21 — Plants & Ecosystems',
+    theme: 't-blue',
+    cards: [
+      { q: "What gas is produced by photosynthesis and used in respiration?", a: "Oxygen." },
+      { q: "What does it mean if organisms are 'interdependent'?", a: "They depend on each other to survive." },
+      { q: "How might planting lots of trees affect the level of carbon dioxide in the atmosphere?", a: "More trees means more photosynthesis, so more carbon dioxide is removed from the atmosphere." },
+      { q: "Why might a decrease in the number of bees be bad news for the human food supply?", a: "Bees pollinate crop plants. Fewer bees means fewer crops can reproduce, so less food is available." },
+      { q: "Explain how insects and many fruit plants are interdependent.", a: "Fruit plants depend on insects to pollinate them so they can reproduce. Insects depend on fruit plants as a source of food." },
+      { q: "Explain how plants allow the Sun's energy to get passed on to nearly all animals on Earth.", a: "During photosynthesis, plants store the Sun's energy in organic molecules. When animals eat plants, this energy is passed on." },
+    ]
+  },
+  {
+    id: 'food',
+    label: '🐟 Food Chains',
+    icon: '🐟',
+    title: 'Food Chains & Food Webs',
+    sub: 'Card 22 — Plants & Ecosystems',
+    theme: 't-orange',
+    cards: [
+      { q: "Complete this sentence: A food web shows many interlinked ______.", a: "Food chains." },
+      { q: "What is a herbivore?", a: "An animal that only eats plants." },
+      { q: "What is a carnivore?", a: "An animal that only eats other animals." },
+      { q: "Name two omnivores in this food web: Seeds → Insects → Thrushes → Owls / Seeds → Voles → Owls", a: "Voles and thrushes — they eat both plants and animals." },
+      { q: "Which organisms are the top carnivores in the food web with owls, voles, thrushes, insects and seeds?", a: "Owls." },
+      { q: "Explain why voles are both primary and secondary consumers.", a: "They eat seeds (producers), making them primary consumers, and they eat insects, making them secondary consumers." },
+      { q: "If thrushes were removed from a food web, give one reason why voles might increase and one reason they might decrease.", a: "Increase: fewer thrushes to eat voles. Decrease: owls may eat more voles as thrushes are no longer available." },
+    ]
+  },
+  {
+    id: 'dna',
+    label: '🧬 DNA',
+    icon: '🧬',
+    title: 'DNA & Inheritance',
+    sub: 'Card 23 — Inheritance, Variation & Survival',
+    theme: 't-purple',
+    cards: [
+      { q: "True or false? Chromosomes are made from DNA.", a: "True — chromosomes are long, coiled up lengths of DNA." },
+      { q: "In what part of a cell are chromosomes found?", a: "The nucleus." },
+      { q: "Which two scientists are famous for building a model of DNA in 1953?", a: "Crick and Watson." },
+      { q: "What are genes?", a: "Short sections of chromosomes. They control many of an organism's characteristics." },
+      { q: "What does 'heredity' mean?", a: "The process by which genes are passed down from parents to offspring." },
+      { q: "Describe how Wilkins and Franklin helped in the development of the model of DNA.", a: "They provided X-ray data showing that DNA is a double helix, which Crick and Watson used to build their model." },
+      { q: "Describe how a child inherits a mixture of its parents' characteristics.", a: "During reproduction, an egg and sperm fuse. Each carries one copy of each gene — one from Mum, one from Dad — so the child gets a mix." },
+    ]
+  },
+  {
+    id: 'var',
+    label: '📊 Variation',
+    icon: '📊',
+    title: 'Variation',
+    sub: 'Card 24 — Inheritance, Variation & Survival',
+    theme: 't-teal',
+    cards: [
+      { q: "What does it mean if a species shows 'variation'?", a: "There are differences between members of the species." },
+      { q: "Apart from genes, what else can affect an organism's characteristic features?", a: "The environment." },
+      { q: "Why do organisms of different species look very different?", a: "Because they have very different genes." },
+      { q: "Two piglets are born on the same day from different pigs. Do you think the piglets will look identical? Explain your answer.", a: "No — because there will be differences in the genes each piglet has, which will affect how they look." },
+      { q: "Which graph shows continuous variation — one with gaps between bars, or one with no gaps?", a: "The one with no gaps between the bars (graph A). Continuous variation means the feature can be any value within a range." },
+      { q: "Give an example of a feature that shows discontinuous variation.", a: "A person's blood group / the colour of a courgette — the feature can only take certain values, not a range." },
+    ]
+  },
+  {
+    id: 'natural',
+    label: '🦎 Natural Selection',
+    icon: '🦎',
+    title: 'Natural Selection & Survival',
+    sub: 'Card 25 — Inheritance, Variation & Survival',
+    theme: 't-red',
+    cards: [
+      { q: "Give two things animals need to compete for in order to survive.", a: "Any two from: water, shelter, food (also mates / space)." },
+      { q: "True or false? Organisms only have to compete with members of different species for resources.", a: "False — organisms also compete with members of their own species." },
+      { q: "What is meant by 'natural selection'?", a: "The process by which a characteristic becomes more or less common in a population, because it affects an organism's chance of surviving and reproducing." },
+      { q: "Stingrays lie on the seabed. Stingray A has a darker body than Stingray B. Which is more likely to survive longer? Explain why.", a: "Stingray A — its darker colour camouflages it better against the darker seabed, so it is more likely to catch prey and survive." },
+      { q: "Body colour in stingrays is controlled by genes. Over time, do you think the population will look more like Stingray A or Stingray B? Explain.", a: "More like Stingray A. Darker stingrays survive longer and are more likely to reproduce, passing on the darker body colour gene." },
+    ]
+  },
+];
+
+/* ── STATE ── */
+const state = {};
+TOPICS.forEach(t => {
+  state[t.id] = {
+    idx: 0,
+    flipped: false,
+    order: t.cards.map((_,i) => i),
+    got: 0,
+    notYet: 0,
+  };
+});
+
+/* ── BUILD UI ── */
+function buildNav() {
+  const nav = document.getElementById('topicNav');
+  TOPICS.forEach((t, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = t.label;
+    btn.onclick = () => switchTopic(t.id, btn);
+    nav.appendChild(btn);
+  });
+}
+
+function buildSections() {
+  const main = document.getElementById('mainContent');
+  TOPICS.forEach(t => {
+    const sec = document.createElement('div');
+    sec.id = 'sec-' + t.id;
+    sec.className = 'topic-section ' + t.theme + (t === TOPICS[0] ? ' active' : '');
+    sec.innerHTML = `
+      <div class="topic-header">
+        <div class="topic-icon">${t.icon}</div>
+        <div>
+          <div class="topic-title">${t.title}</div>
+          <div class="topic-sub">${t.sub}</div>
+        </div>
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-track">
+          <div class="progress-fill" id="prog-${t.id}" style="width:${(1/t.cards.length*100).toFixed(1)}%"></div>
+        </div>
+        <div class="progress-label" id="progLabel-${t.id}">1 / ${t.cards.length}</div>
+      </div>
+
+      <div class="card-wrap" onclick="flipCard('${t.id}')">
+        <div class="card" id="card-${t.id}">
+          <span class="card-side-label" id="sideLabel-${t.id}">Question</span>
+          <span class="card-number" id="cardNum-${t.id}">1/${t.cards.length}</span>
+          <div class="card-content" id="cardContent-${t.id}">${t.cards[0].q}</div>
+          <div class="card-tap-hint" id="tapHint-${t.id}">Tap to reveal answer</div>
+        </div>
+      </div>
+
+      <div class="answer-panel" id="ansPanel-${t.id}" style="border-left-color: currentColor;">
+        <div class="answer-label">Answer</div>
+        <div id="ansContent-${t.id}"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-prev" onclick="prevCard('${t.id}')">← Prev</button>
+        <button class="btn btn-flip" onclick="flipCard('${t.id}')">Flip</button>
+        <button class="btn btn-next" onclick="nextCard('${t.id}')">Next →</button>
+        <button class="btn btn-shuffle" onclick="shuffleCards('${t.id}')">🔀 Shuffle</button>
+      </div>
+
+      <div class="score-row">
+        <button class="score-btn btn-got-it" onclick="markGot('${t.id}')">✅ Got it!</button>
+        <button class="score-btn btn-not-yet" onclick="markNotYet('${t.id}')">❌ Not yet</button>
+      </div>
+      <div class="score-display" id="scoreDisplay-${t.id}">Got it: 0 &nbsp;|&nbsp; Still learning: 0</div>
+    `;
+    main.appendChild(sec);
+  });
+}
+
+/* ── LOGIC ── */
+function switchTopic(id, btn) {
+  document.querySelectorAll('.topic-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function renderCard(id) {
+  const s = state[id];
+  const topic = TOPICS.find(t => t.id === id);
+  const card = topic.cards[s.order[s.idx]];
+  const total = topic.cards.length;
+
+  s.flipped = false;
+  document.getElementById('sideLabel-' + id).textContent = 'Question';
+  document.getElementById('cardContent-' + id).textContent = card.q;
+  document.getElementById('cardNum-' + id).textContent = (s.idx + 1) + '/' + total;
+  document.getElementById('tapHint-' + id).style.display = '';
+  document.getElementById('tapHint-' + id).textContent = 'Tap to reveal answer';
+  document.getElementById('ansPanel-' + id).classList.remove('visible');
+  document.getElementById('ansContent-' + id).textContent = '';
+
+  // Progress
+  const pct = ((s.idx + 1) / total * 100).toFixed(1);
+  document.getElementById('prog-' + id).style.width = pct + '%';
+  document.getElementById('progLabel-' + id).textContent = (s.idx + 1) + ' / ' + total;
+}
+
+function flipCard(id) {
+  const s = state[id];
+  const topic = TOPICS.find(t => t.id === id);
+  const card = topic.cards[s.order[s.idx]];
+
+  s.flipped = !s.flipped;
+  if (s.flipped) {
+    document.getElementById('sideLabel-' + id).textContent = 'Answer';
+    document.getElementById('cardContent-' + id).textContent = card.a;
+    document.getElementById('tapHint-' + id).textContent = 'Tap to see question again';
+    const panel = document.getElementById('ansPanel-' + id);
+    document.getElementById('ansContent-' + id).textContent = card.a;
+    panel.classList.add('visible');
+  } else {
+    document.getElementById('sideLabel-' + id).textContent = 'Question';
+    document.getElementById('cardContent-' + id).textContent = card.q;
+    document.getElementById('tapHint-' + id).textContent = 'Tap to reveal answer';
+    document.getElementById('ansPanel-' + id).classList.remove('visible');
+  }
+}
+
+function nextCard(id) {
+  const total = TOPICS.find(t => t.id === id).cards.length;
+  state[id].idx = (state[id].idx + 1) % total;
+  renderCard(id);
+}
+
+function prevCard(id) {
+  const total = TOPICS.find(t => t.id === id).cards.length;
+  state[id].idx = (state[id].idx - 1 + total) % total;
+  renderCard(id);
+}
+
+function shuffleCards(id) {
+  const arr = state[id].order;
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  state[id].idx = 0;
+  renderCard(id);
+}
+
+function markGot(id) {
+  state[id].got++;
+  updateScore(id);
+  nextCard(id);
+}
+
+function markNotYet(id) {
+  state[id].notYet++;
+  updateScore(id);
+  nextCard(id);
+}
+
+function updateScore(id) {
+  const s = state[id];
+  document.getElementById('scoreDisplay-' + id).innerHTML =
+    `✅ Got it: ${s.got} &nbsp;|&nbsp; 📚 Still learning: ${s.notYet}`;
+}
+
+/* ── INIT ── */
+buildNav();
+buildSections();
+</script>
+</body>
+</html>
