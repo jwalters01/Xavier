@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Revision</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --green-light: #d5f5e3;
+    --green-dark: #1a7a44;
+    --blue: #3498db;
+    --blue-light: #d6eaf8;
+    --blue-dark: #1a5276;
+    --orange: #e67e22;
+    --orange-light: #fdebd0;
+    --orange-dark: #784212;
+    --purple: #9b59b6;
+    --purple-light: #e8daef;
+    --purple-dark: #5b2c6f;
+    --red: #e74c3c;
+    --red-light: #fadbd8;
+    --bg: #f7f9fc;
+    --text: #1a1a2e;
+    --card-radius: 16px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 28px 24px 20px;
+    text-align: center;
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  header p { font-size: 1rem; opacity: 0.75; font-weight: 600; }
+
+  /* ── NAV TABS ── */
+  nav {
+    display: flex;
+    overflow-x: auto;
+    background: #16213e;
+    padding: 0 16px;
+    gap: 4px;
+    border-bottom: 3px solid #0f3460;
+  }
+  nav button {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    transition: all 0.2s;
+    border-radius: 8px 8px 0 0;
+  }
+  nav button:hover { color: white; background: rgba(255,255,255,0.08); }
+  nav button.active { color: white; border-bottom-color: var(--green); background: rgba(255,255,255,0.12); }
+
+  /* ── MAIN ── */
+  main { padding: 24px 20px; max-width: 900px; margin: 0 auto; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── TOPIC BADGE ── */
+  .topic-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 0.95rem;
+    opacity: 0.65;
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+
+  /* ══════════════════════════════
+     FLASHCARDS
+  ══════════════════════════════ */
+  .flashcard-area { text-align: center; }
+
+  .card-counter {
+    font-size: 0.9rem;
+    font-weight: 700;
+    opacity: 0.5;
+    margin-bottom: 12px;
+  }
+
+  .flashcard {
+    width: 100%;
+    max-width: 560px;
+    min-height: 220px;
+    margin: 0 auto 20px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-face {
+    width: 100%;
+    min-height: 220px;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    transition: all 0.25s;
+  }
+
+  .card-face.front { display: flex; }
+  .card-face.back  { display: none; }
+  .card-face.showing-back .front { display: none; }
+  .card-face.showing-back .back  { display: flex; }
+
+  .card-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    opacity: 0.55;
+  }
+  .card-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+  }
+  .card-hint {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.45;
+  }
+
+  .card-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .card-controls button {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card-controls button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  .btn-flip { background: #1a1a2e; color: white; }
+  .btn-next { color: white; }
+  .btn-prev { background: #e8e8f0; color: #1a1a2e; }
+  .btn-shuffle { background: #e8e8f0; color: #1a1a2e; font-size: 0.8rem; }
+
+  /* ══════════════════════════════
+     CLOZE
+  ══════════════════════════════ */
+  .cloze-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    border-left: 6px solid;
+  }
+  .cloze-card p {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+  .cloze-input {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    border: 2px solid #d0d0e0;
+    border-radius: 8px;
+    padding: 4px 10px;
+    width: 140px;
+    text-align: center;
+    background: #f7f9fc;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .cloze-input:focus { border-color: var(--blue); }
+  .cloze-input.correct { border-color: var(--green); background: var(--green-light); }
+  .cloze-input.wrong   { border-color: var(--red);   background: var(--red-light); }
+
+  .check-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-top: 16px;
+    color: white;
+    transition: transform 0.15s;
+  }
+  .check-btn:hover { transform: translateY(-2px); }
+
+  .cloze-result {
+    font-weight: 800;
+    margin-top: 12px;
+    font-size: 1rem;
+    display: none;
+  }
+
+  /* ══════════════════════════════
+     BRAIN DUMP
+  ══════════════════════════════ */
+  .brain-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    border-left: 6px solid;
+  }
+  .brain-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .brain-card p {
+    font-size: 0.9rem;
+    opacity: 0.65;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .brain-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .brain-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .line-num {
+    font-weight: 900;
+    font-size: 1rem;
+    min-width: 24px;
+    opacity: 0.5;
+  }
+  .brain-input {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    border-bottom: 2px solid #d0d0e0;
+    padding: 6px 4px;
+    width: 100%;
+    background: transparent;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .brain-input:focus { border-bottom-color: var(--blue); }
+
+  /* ══════════════════════════════
+     GLOSSARY
+  ══════════════════════════════ */
+  .glossary-card {
+    background: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    border-left: 6px solid;
+  }
+  .glossary-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    min-width: 130px;
+    padding-top: 4px;
+  }
+  .glossary-def {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    border-bottom: 2px dashed #d0d0e0;
+    width: 100%;
+    padding: 4px 4px 6px;
+    background: transparent;
+    outline: none;
+    font-style: italic;
+    color: #555;
+    transition: border-color 0.2s;
+    resize: none;
+    min-height: 36px;
+    line-height: 1.5;
+  }
+  .glossary-def:focus { border-bottom-color: var(--purple); font-style: normal; }
+
+  /* ══════════════════════════════
+     COLOUR THEMES PER TOPIC
+  ══════════════════════════════ */
+  /* Photosynthesis = green */
+  .theme-green .topic-badge   { background: var(--green-light); color: var(--green-dark); }
+  .theme-green .section-title { color: var(--green-dark); }
+  .theme-green .card-face     { background: var(--green-light); border: 2px solid var(--green); }
+  .theme-green .card-label, .theme-green .card-text { color: var(--green-dark); }
+  .theme-green .btn-next      { background: var(--green); }
+  .theme-green .check-btn     { background: var(--green); }
+  .theme-green .cloze-card    { border-left-color: var(--green); }
+  .theme-green .brain-card    { border-left-color: var(--green); }
+  .theme-green .glossary-card { border-left-color: var(--green); }
+  .theme-green .glossary-word { color: var(--green-dark); }
+
+  /* Food Chains = orange */
+  .theme-orange .topic-badge   { background: var(--orange-light); color: var(--orange-dark); }
+  .theme-orange .section-title { color: var(--orange-dark); }
+  .theme-orange .card-face     { background: var(--orange-light); border: 2px solid var(--orange); }
+  .theme-orange .card-label, .theme-orange .card-text { color: var(--orange-dark); }
+  .theme-orange .btn-next      { background: var(--orange); }
+  .theme-orange .check-btn     { background: var(--orange); }
+  .theme-orange .cloze-card    { border-left-color: var(--orange); }
+  .theme-orange .brain-card    { border-left-color: var(--orange); }
+  .theme-orange .glossary-card { border-left-color: var(--orange); }
+  .theme-orange .glossary-word { color: var(--orange-dark); }
+
+  /* Ecosystems = blue */
+  .theme-blue .topic-badge   { background: var(--blue-light); color: var(--blue-dark); }
+  .theme-blue .section-title { color: var(--blue-dark); }
+  .theme-blue .card-face     { background: var(--blue-light); border: 2px solid var(--blue); }
+  .theme-blue .card-label, .theme-blue .card-text { color: var(--blue-dark); }
+  .theme-blue .btn-next      { background: var(--blue); }
+  .theme-blue .check-btn     { background: var(--blue); }
+  .theme-blue .cloze-card    { border-left-color: var(--blue); }
+  .theme-blue .brain-card    { border-left-color: var(--blue); }
+  .theme-blue .glossary-card { border-left-color: var(--blue); }
+  .theme-blue .glossary-word { color: var(--blue-dark); }
+
+  /* DNA = purple */
+  .theme-purple .topic-badge   { background: var(--purple-light); color: var(--purple-dark); }
+  .theme-purple .section-title { color: var(--purple-dark); }
+  .theme-purple .card-face     { background: var(--purple-light); border: 2px solid var(--purple); }
+  .theme-purple .card-label, .theme-purple .card-text { color: var(--purple-dark); }
+  .theme-purple .btn-next      { background: var(--purple); }
+  .theme-purple .check-btn     { background: var(--purple); }
+  .theme-purple .cloze-card    { border-left-color: var(--purple); }
+  .theme-purple .brain-card    { border-left-color: var(--purple); }
+  .theme-purple .glossary-card { border-left-color: var(--purple); }
+  .theme-purple .glossary-word { color: var(--purple-dark); }
+
+  /* Variation = red */
+  .theme-red .topic-badge   { background: var(--red-light); color: #7b241c; }
+  .theme-red .section-title { color: #7b241c; }
+  .theme-red .card-face     { background: var(--red-light); border: 2px solid var(--red); }
+  .theme-red .card-label, .theme-red .card-text { color: #7b241c; }
+  .theme-red .btn-next      { background: var(--red); }
+  .theme-red .check-btn     { background: var(--red); }
+  .theme-red .cloze-card    { border-left-color: var(--red); }
+  .theme-red .brain-card    { border-left-color: var(--red); }
+  .theme-red .glossary-card { border-left-color: var(--red); }
+  .theme-red .glossary-word { color: #7b241c; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { background: #e0e0ec; border-radius: 999px; height: 8px; margin: 18px 0 24px; overflow: hidden; }
+  .progress-bar  { height: 100%; border-radius: 999px; transition: width 0.4s; }
+
+  /* ── UTILITY ── */
+  hr.divider { border: none; border-top: 2px dashed #e0e0ec; margin: 28px 0; }
+
+  .score-display {
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 500px) {
+    header h1 { font-size: 1.6rem; }
+    .card-text { font-size: 1.05rem; }
+    .glossary-card { flex-direction: column; gap: 6px; }
+    .glossary-word { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔬 Science Revision</h1>
+  <p>Flashcards · Fill in the Blanks · Brain Dumps · Glossary</p>
+</header>
+
+<nav id="mainNav">
+  <button class="active"  onclick="showTab('photo')">🌿 Photosynthesis</button>
+  <button onclick="showTab('food')">🐟 Food Chains</button>
+  <button onclick="showTab('eco')">🌍 Ecosystems</button>
+  <button onclick="showTab('dna')">🧬 DNA</button>
+  <button onclick="showTab('var')">📊 Variation</button>
+</nav>
+
+<main>
+
+<!-- ════════════════════════════════════════
+     PHOTOSYNTHESIS
+════════════════════════════════════════ -->
+<div id="photo" class="section active theme-green">
+  <span class="topic-badge">Section 3 — Plants & Ecosystems</span>
+  <h2 class="section-title">Plant Nutrition & Photosynthesis</h2>
+
+  <!-- FLASHCARDS -->
+  <p class="section-sub">🃏 Flashcards — tap a card to reveal the answer</p>
+
+  <div class="flashcard-area" id="photoCards">
+    <div class="card-counter" id="photoCounter">Card 1 of 8</div>
+    <div class="flashcard" onclick="flipCard('photo')">
+      <div class="card-face" id="photoFace">
+        <span class="card-label">Question</span>
+        <span class="card-text" id="photoQ"></span>
+        <span class="card-hint">Tap to reveal answer</span>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="btn-prev" onclick="prevCard('photo')">← Previous</button>
+      <button class="btn-flip" onclick="flipCard('photo')">Flip Card</button>
+      <button class="btn-next" onclick="nextCard('photo')">Next →</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-shuffle" onclick="shuffleCards('photo')">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CLOZE -->
+  <p class="section-sub">✏️ Fill in the Blanks — write the missing word</p>
+  <div id="photoCloze"></div>
+  <div style="text-align:center;">
+    <button class="check-btn" onclick="checkCloze('photo')">Check My Answers</button>
+    <div class="cloze-result" id="photoClozeResult"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BRAIN DUMP -->
+  <p class="section-sub">🧠 Brain Dump — write what you remember</p>
+  <div id="photoBrain"></div>
+
+  <hr class="divider">
+
+  <!-- GLOSSARY -->
+  <p class="section-sub">📖 Key Word Glossary — write the definition in your own words</p>
+  <div id="photoGlossary"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     FOOD CHAINS
+════════════════════════════════════════ -->
+<div id="food" class="section theme-orange">
+  <span class="topic-badge">Section 3 — Plants & Ecosystems</span>
+  <h2 class="section-title">Food Chains & Food Webs</h2>
+
+  <p class="section-sub">🃏 Flashcards — tap a card to reveal the answer</p>
+  <div class="flashcard-area" id="foodCards">
+    <div class="card-counter" id="foodCounter">Card 1 of 7</div>
+    <div class="flashcard" onclick="flipCard('food')">
+      <div class="card-face" id="foodFace">
+        <span class="card-label">Question</span>
+        <span class="card-text" id="foodQ"></span>
+        <span class="card-hint">Tap to reveal answer</span>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="btn-prev" onclick="prevCard('food')">← Previous</button>
+      <button class="btn-flip" onclick="flipCard('food')">Flip Card</button>
+      <button class="btn-next" onclick="nextCard('food')">Next →</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-shuffle" onclick="shuffleCards('food')">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">✏️ Fill in the Blanks</p>
+  <div id="foodCloze"></div>
+  <div style="text-align:center;">
+    <button class="check-btn" onclick="checkCloze('food')">Check My Answers</button>
+    <div class="cloze-result" id="foodClozeResult"></div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">🧠 Brain Dump</p>
+  <div id="foodBrain"></div>
+
+  <hr class="divider">
+  <p class="section-sub">📖 Key Word Glossary</p>
+  <div id="foodGlossary"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     ECOSYSTEMS
+════════════════════════════════════════ -->
+<div id="eco" class="section theme-blue">
+  <span class="topic-badge">Section 3 — Plants & Ecosystems</span>
+  <h2 class="section-title">Dependence on Other Organisms</h2>
+
+  <p class="section-sub">🃏 Flashcards — tap a card to reveal the answer</p>
+  <div class="flashcard-area" id="ecoCards">
+    <div class="card-counter" id="ecoCounter">Card 1 of 6</div>
+    <div class="flashcard" onclick="flipCard('eco')">
+      <div class="card-face" id="ecoFace">
+        <span class="card-label">Question</span>
+        <span class="card-text" id="ecoQ"></span>
+        <span class="card-hint">Tap to reveal answer</span>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="btn-prev" onclick="prevCard('eco')">← Previous</button>
+      <button class="btn-flip" onclick="flipCard('eco')">Flip Card</button>
+      <button class="btn-next" onclick="nextCard('eco')">Next →</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-shuffle" onclick="shuffleCards('eco')">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">✏️ Fill in the Blanks</p>
+  <div id="ecoCloze"></div>
+  <div style="text-align:center;">
+    <button class="check-btn" onclick="checkCloze('eco')">Check My Answers</button>
+    <div class="cloze-result" id="ecoClozeResult"></div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">🧠 Brain Dump</p>
+  <div id="ecoBrain"></div>
+
+  <hr class="divider">
+  <p class="section-sub">📖 Key Word Glossary</p>
+  <div id="ecoGlossary"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     DNA
+════════════════════════════════════════ -->
+<div id="dna" class="section theme-purple">
+  <span class="topic-badge">Section 4 — Inheritance, Variation & Survival</span>
+  <h2 class="section-title">DNA & Inheritance</h2>
+
+  <p class="section-sub">🃏 Flashcards — tap a card to reveal the answer</p>
+  <div class="flashcard-area" id="dnaCards">
+    <div class="card-counter" id="dnaCounter">Card 1 of 8</div>
+    <div class="flashcard" onclick="flipCard('dna')">
+      <div class="card-face" id="dnaFace">
+        <span class="card-label">Question</span>
+        <span class="card-text" id="dnaQ"></span>
+        <span class="card-hint">Tap to reveal answer</span>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="btn-prev" onclick="prevCard('dna')">← Previous</button>
+      <button class="btn-flip" onclick="flipCard('dna')">Flip Card</button>
+      <button class="btn-next" onclick="nextCard('dna')">Next →</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-shuffle" onclick="shuffleCards('dna')">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">✏️ Fill in the Blanks</p>
+  <div id="dnaCloze"></div>
+  <div style="text-align:center;">
+    <button class="check-btn" onclick="checkCloze('dna')">Check My Answers</button>
+    <div class="cloze-result" id="dnaClozeResult"></div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">🧠 Brain Dump</p>
+  <div id="dnaBrain"></div>
+
+  <hr class="divider">
+  <p class="section-sub">📖 Key Word Glossary</p>
+  <div id="dnaGlossary"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     VARIATION
+════════════════════════════════════════ -->
+<div id="var" class="section theme-red">
+  <span class="topic-badge">Section 4 — Inheritance, Variation & Survival</span>
+  <h2 class="section-title">Variation</h2>
+
+  <p class="section-sub">🃏 Flashcards — tap a card to reveal the answer</p>
+  <div class="flashcard-area" id="varCards">
+    <div class="card-counter" id="varCounter">Card 1 of 7</div>
+    <div class="flashcard" onclick="flipCard('var')">
+      <div class="card-face" id="varFace">
+        <span class="card-label">Question</span>
+        <span class="card-text" id="varQ"></span>
+        <span class="card-hint">Tap to reveal answer</span>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="btn-prev" onclick="prevCard('var')">← Previous</button>
+      <button class="btn-flip" onclick="flipCard('var')">Flip Card</button>
+      <button class="btn-next" onclick="nextCard('var')">Next →</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-shuffle" onclick="shuffleCards('var')">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">✏️ Fill in the Blanks</p>
+  <div id="varCloze"></div>
+  <div style="text-align:center;">
+    <button class="check-btn" onclick="checkCloze('var')">Check My Answers</button>
+    <div class="cloze-result" id="varClozeResult"></div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-sub">🧠 Brain Dump</p>
+  <div id="varBrain"></div>
+
+  <hr class="divider">
+  <p class="section-sub">📖 Key Word Glossary</p>
+  <div id="varGlossary"></div>
+</div>
+
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════ */
+
+const DATA = {
+
+  photo: {
+    cards: [
+      { q: "What is photosynthesis?", a: "A chemical process that turns sunlight, water and carbon dioxide into glucose and oxygen." },
+      { q: "Where does photosynthesis mainly happen in a plant?", a: "In the leaves." },
+      { q: "Name the 4 things a plant needs for photosynthesis.", a: "Sunlight, chlorophyll, water, carbon dioxide." },
+      { q: "What is chlorophyll?", a: "A green chemical found in chloroplasts that absorbs sunlight." },
+      { q: "Write the word equation for photosynthesis.", a: "Carbon dioxide + Water → Glucose + Oxygen (using sunlight)." },
+      { q: "What are stomata?", a: "Tiny holes on the underside of a leaf that let carbon dioxide in and oxygen out." },
+      { q: "Why are leaves broad?", a: "To give a big surface area for absorbing light." },
+      { q: "What do plants absorb through their roots?", a: "Water and minerals from the soil." },
+    ],
+    cloze: [
+      { sentence: "Photosynthesis is a <b>chemical</b> process that takes place in every <b>green</b> plant.", blanks: ["chemical","green"], hint: "chemical / green" },
+      { sentence: "The word equation is: Carbon dioxide + Water → _____ + Oxygen", blanks: ["glucose"], hint: "glucose" },
+      { sentence: "Chlorophyll is found inside structures called _____.", blanks: ["chloroplasts"], hint: "chloroplasts" },
+      { sentence: "The bottom of the leaf has tiny holes called _____ that let gases move in and out.", blanks: ["stomata"], hint: "stomata" },
+      { sentence: "Plants also absorb _____ from the soil through their roots to keep healthy.", blanks: ["minerals"], hint: "minerals" },
+    ],
+    brain: [
+      { prompt: "Write 3 things that are needed for photosynthesis:", lines: 3 },
+      { prompt: "Explain why leaves are good at photosynthesis — write 2 reasons:", lines: 2 },
+    ],
+    glossary: ["Photosynthesis","Chlorophyll","Chloroplast","Glucose","Stomata","Reactant","Product"],
+  },
+
+  food: {
+    cards: [
+      { q: "What does an arrow in a food chain mean?", a: "It shows the direction energy moves — what is eaten by what." },
+      { q: "What is a producer?", a: "A plant — it stores energy from the Sun." },
+      { q: "What is a consumer?", a: "An animal that eats other living things." },
+      { q: "What is a primary consumer?", a: "An animal that eats producers (plants)." },
+      { q: "What is a secondary consumer?", a: "An animal that eats primary consumers." },
+      { q: "What is a tertiary consumer?", a: "An animal that eats secondary consumers." },
+      { q: "What is a food web?", a: "Lots of food chains joined together showing how organisms in an ecosystem are linked." },
+    ],
+    cloze: [
+      { sentence: "All plants are called _____ because they store energy from the Sun.", blanks: ["producers"], hint: "producers" },
+      { sentence: "All animals are called _____ because they eat other living things.", blanks: ["consumers"], hint: "consumers" },
+      { sentence: "Arrows in a food chain show the direction _____ moves.", blanks: ["energy"], hint: "energy" },
+      { sentence: "A _____ consumer eats plants; a _____ consumer eats primary consumers.", blanks: ["primary","secondary"], hint: "primary / secondary" },
+      { sentence: "A food _____ is lots of food chains joined together.", blanks: ["web"], hint: "web" },
+    ],
+    brain: [
+      { prompt: "Write out a food chain with 4 organisms — label each one (producer, primary, secondary, tertiary):", lines: 4 },
+      { prompt: "What might happen to water beetles if minnows are removed? Write 2 sentences:", lines: 2 },
+    ],
+    glossary: ["Producer","Consumer","Primary consumer","Secondary consumer","Tertiary consumer","Food web","Predator"],
+  },
+
+  eco: {
+    cards: [
+      { q: "What is an ecosystem?", a: "All the living organisms in one area, plus their environment." },
+      { q: "What does interdependent mean?", a: "Organisms need each other to survive." },
+      { q: "Why do almost all living things depend on plants?", a: "Plants capture the Sun's energy, which passes to animals when they eat plants." },
+      { q: "What gas do plants give out during photosynthesis?", a: "Oxygen." },
+      { q: "What gas do plants take in during photosynthesis?", a: "Carbon dioxide." },
+      { q: "What does 'respire' mean?", a: "To breathe — animals take in oxygen and give out carbon dioxide." },
+    ],
+    cloze: [
+      { sentence: "An ecosystem is all the living organisms in one area, plus their _____.", blanks: ["environment"], hint: "environment" },
+      { sentence: "Organisms in an ecosystem are _____ — they need each other to survive.", blanks: ["interdependent"], hint: "interdependent" },
+      { sentence: "During photosynthesis, plants give out _____ and take in _____.", blanks: ["oxygen","carbon dioxide"], hint: "oxygen / carbon dioxide" },
+      { sentence: "Animals _____ — they take in oxygen and give out carbon dioxide.", blanks: ["respire"], hint: "respire" },
+      { sentence: "Without plants, there would not be enough _____ in the air for animals to breathe.", blanks: ["oxygen"], hint: "oxygen" },
+    ],
+    brain: [
+      { prompt: "Explain in 3 sentences why almost all living things depend on plants:", lines: 3 },
+      { prompt: "What would happen if all the plants in an ecosystem died? Write 2 consequences:", lines: 2 },
+    ],
+    glossary: ["Ecosystem","Organism","Interdependent","Photosynthesis","Respiration","Environment"],
+  },
+
+  dna: {
+    cards: [
+      { q: "What does most cells contain that controls characteristics?", a: "A nucleus." },
+      { q: "What are chromosomes?", a: "Long lengths of DNA found in the nucleus." },
+      { q: "How many chromosomes do humans have?", a: "46 (23 pairs)." },
+      { q: "What is a gene?", a: "A short length of DNA that controls a characteristic." },
+      { q: "What is heredity?", a: "When genes are passed from parents to their children." },
+      { q: "What is a hereditary characteristic?", a: "A feature passed on from parents, like eye colour." },
+      { q: "Who first built a model of DNA?", a: "Crick and Watson, using data from Wilkins and Franklin." },
+      { q: "What is the structure of a DNA molecule?", a: "A double helix — two chains twisted together in a spiral." },
+    ],
+    cloze: [
+      { sentence: "Most cells have a _____, which contains chromosomes.", blanks: ["nucleus"], hint: "nucleus" },
+      { sentence: "Chromosomes are long lengths of _____, which is a list of chemical instructions.", blanks: ["DNA"], hint: "DNA" },
+      { sentence: "A _____ is a short length of DNA that controls a characteristic.", blanks: ["gene"], hint: "gene" },
+      { sentence: "When genes are passed from parent to child, this is called _____.", blanks: ["heredity"], hint: "heredity" },
+      { sentence: "DNA is shaped like a _____ — two chains twisted together.", blanks: ["double helix"], hint: "double helix" },
+    ],
+    brain: [
+      { prompt: "Explain the link between: nucleus → chromosome → gene → characteristic (write it as a chain):", lines: 4 },
+      { prompt: "Why might a child have some features from Mum and some from Dad? Write 2 sentences:", lines: 2 },
+    ],
+    glossary: ["Nucleus","Chromosome","DNA","Gene","Heredity","Characteristic","Double helix"],
+  },
+
+  var: {
+    cards: [
+      { q: "What is variation?", a: "The differences between living things." },
+      { q: "Why do different species vary so much?", a: "Because they have very different genes." },
+      { q: "What is continuous variation? Give an example.", a: "When a feature can be any value in a range, e.g. height or weight." },
+      { q: "What is discontinuous variation? Give an example.", a: "When a feature can only be certain values, e.g. blood group (A, B, AB, O)." },
+      { q: "What causes variation within the same species?", a: "Both genes AND the environment." },
+      { q: "What type of graph shows discontinuous variation?", a: "A bar chart with gaps between the bars." },
+      { q: "Give an example of an environmental characteristic.", a: "Hair style, scars, language spoken." },
+    ],
+    cloze: [
+      { sentence: "Variation is the _____ between living things.", blanks: ["differences"], hint: "differences" },
+      { sentence: "Continuous variation means a feature can be _____ value, like height.", blanks: ["any"], hint: "any" },
+      { sentence: "Blood group is an example of _____ variation — there are only 4 groups.", blanks: ["discontinuous"], hint: "discontinuous" },
+      { sentence: "Variation within a species can be caused by both _____ and the environment.", blanks: ["genes"], hint: "genes" },
+      { sentence: "A continuous variation graph has _____ between the bars.", blanks: ["no gaps"], hint: "no gaps" },
+    ],
+    brain: [
+      { prompt: "Give 2 examples of continuous variation and explain why they are continuous:", lines: 2 },
+      { prompt: "Give 2 examples of discontinuous variation and explain why they are discontinuous:", lines: 2 },
+      { prompt: "Write 1 sentence explaining the difference between continuous and discontinuous variation:", lines: 1 },
+    ],
+    glossary: ["Variation","Continuous variation","Discontinuous variation","Characteristic","Environmental factor","Species"],
+  },
+
+};
+
+
+/* ══════════════════════════════════════════════════
+   FLASHCARD STATE
+══════════════════════════════════════════════════ */
+const state = {};
+['photo','food','eco','dna','var'].forEach(t => {
+  state[t] = { idx: 0, flipped: false, order: DATA[t].cards.map((_,i)=>i) };
+});
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderCard(topic) {
+  const s = state[topic];
+  const cards = DATA[topic].cards;
+  const card = cards[s.order[s.idx]];
+  const face = document.getElementById(topic + 'Face');
+  const counter = document.getElementById(topic + 'Counter');
+
+  s.flipped = false;
+  face.querySelector('.card-label').textContent = 'Question';
+  face.querySelector('.' + (face.querySelector('.card-text') ? 'card-text' : 'card-text')).textContent = card.q;
+  face.querySelector('.card-text').textContent = card.q;
+  face.querySelector('.card-hint').style.display = '';
+  face.querySelector('.card-hint').textContent = 'Tap to reveal answer';
+  counter.textContent = `Card ${s.idx + 1} of ${cards.length}`;
+}
+
+function flipCard(topic) {
+  const s = state[topic];
+  const cards = DATA[topic].cards;
+  const card = cards[s.order[s.idx]];
+  const face = document.getElementById(topic + 'Face');
+
+  s.flipped = !s.flipped;
+  if (s.flipped) {
+    face.querySelector('.card-label').textContent = 'Answer';
+    face.querySelector('.card-text').textContent = card.a;
+    face.querySelector('.card-hint').textContent = '← Tap again to see question';
+  } else {
+    face.querySelector('.card-label').textContent = 'Question';
+    face.querySelector('.card-text').textContent = card.q;
+    face.querySelector('.card-hint').textContent = 'Tap to reveal answer';
+  }
+}
+
+function nextCard(topic) {
+  const s = state[topic];
+  s.idx = (s.idx + 1) % DATA[topic].cards.length;
+  renderCard(topic);
+}
+
+function prevCard(topic) {
+  const s = state[topic];
+  s.idx = (s.idx - 1 + DATA[topic].cards.length) % DATA[topic].cards.length;
+  renderCard(topic);
+}
+
+function shuffleCards(topic) {
+  shuffle(state[topic].order);
+  state[topic].idx = 0;
+  renderCard(topic);
+}
+
+
+/* ══════════════════════════════════════════════════
+   CLOZE BUILD
+══════════════════════════════════════════════════ */
+function buildCloze(topic) {
+  const container = document.getElementById(topic + 'Cloze');
+  container.innerHTML = '';
+
+  DATA[topic].cloze.forEach((item, ci) => {
+    const card = document.createElement('div');
+    card.className = 'cloze-card';
+
+    // Build the sentence with inputs replacing blanks
+    let html = item.sentence;
+    item.blanks.forEach((blank, bi) => {
+      const inputHtml = `<input class="cloze-input" data-topic="${topic}" data-ci="${ci}" data-bi="${bi}" data-answer="${blank.toLowerCase()}" placeholder="?" />`;
+      // Replace first occurrence of blank placeholder
+      html = html.replace(`_____`, inputHtml);
+    });
+
+    card.innerHTML = `<p>${html}</p>`;
+    container.appendChild(card);
+  });
+}
+
+function checkCloze(topic) {
+  const inputs = document.querySelectorAll(`.cloze-input[data-topic="${topic}"]`);
+  let correct = 0;
+  inputs.forEach(inp => {
+    const val = inp.value.trim().toLowerCase();
+    const ans = inp.dataset.answer.toLowerCase();
+    if (val === ans) {
+      inp.classList.add('correct');
+      inp.classList.remove('wrong');
+      correct++;
+    } else {
+      inp.classList.add('wrong');
+      inp.classList.remove('correct');
+    }
+  });
+  const result = document.getElementById(topic + 'ClozeResult');
+  result.style.display = 'block';
+  const pct = Math.round((correct / inputs.length) * 100);
+  result.textContent = `You got ${correct} out of ${inputs.length} correct! (${pct}%)`;
+  result.style.color = pct >= 80 ? 'var(--green-dark)' : pct >= 50 ? 'var(--orange-dark)' : 'var(--red)';
+}
+
+
+/* ══════════════════════════════════════════════════
+   BRAIN DUMP BUILD
+══════════════════════════════════════════════════ */
+function buildBrain(topic) {
+  const container = document.getElementById(topic + 'Brain');
+  container.innerHTML = '';
+
+  DATA[topic].brain.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'brain-card';
+    let linesHtml = '';
+    for (let i = 1; i <= item.lines; i++) {
+      linesHtml += `<div class="brain-line">
+        <span class="line-num">${i}.</span>
+        <input class="brain-input" type="text" placeholder="Write here...">
+      </div>`;
+    }
+    card.innerHTML = `<h3>${item.prompt}</h3><p>Write in short notes — you don't need full sentences.</p><div class="brain-lines">${linesHtml}</div>`;
+    container.appendChild(card);
+  });
+}
+
+
+/* ══════════════════════════════════════════════════
+   GLOSSARY BUILD
+══════════════════════════════════════════════════ */
+function buildGlossary(topic) {
+  const container = document.getElementById(topic + 'Glossary');
+  container.innerHTML = '';
+
+  DATA[topic].glossary.forEach(word => {
+    const card = document.createElement('div');
+    card.className = 'glossary-card';
+    card.innerHTML = `<div class="glossary-word">${word}</div>
+      <textarea class="glossary-def" rows="1" placeholder="Write your own definition here..."></textarea>`;
+    container.appendChild(card);
+
+    // Auto-resize textarea
+    const ta = card.querySelector('textarea');
+    ta.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+  });
+}
+
+
+/* ══════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════ */
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
+['photo','food','eco','dna','var'].forEach(t => {
+  renderCard(t);
+  buildCloze(t);
+  buildBrain(t);
+  buildGlossary(t);
+});
+</script>
+</body>
+</html>
