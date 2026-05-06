@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Xav's Science Revision – All Topics</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { page-break-after: always; }
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #e5e7eb;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 20px;
+    padding: 14mm 14mm 10mm;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  /* ---- SHARED ---- */
+  .header {
+    border-radius: 18px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-emoji { font-size: 3em; }
+  .header-text h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4em;
+    color: #fff;
+    line-height: 1;
+  }
+  .header-text p {
+    color: rgba(255,255,255,0.85);
+    font-size: 1em;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .big-idea {
+    border: 3px solid;
+    border-radius: 14px;
+    padding: 13px 18px;
+    font-size: 1.1em;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25em;
+    margin-bottom: 6px;
+  }
+
+  .card-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .col-2 { grid-template-columns: 1fr 1fr; }
+  .col-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .col-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    border-radius: 14px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card .icon { font-size: 1.9em; flex-shrink: 0; }
+  .card .info strong { display: block; font-size: 1em; font-weight: 800; color: #1e293b; }
+  .card .info span { font-size: 0.82em; font-weight: 700; color: #475569; line-height: 1.3; }
+
+  .mini-card {
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .mini-card .mc-icon { font-size: 1.8em; display: block; margin-bottom: 5px; }
+  .mini-card strong { font-size: 0.95em; display: block; color: #1e293b; }
+  .mini-card span { font-size: 0.78em; color: #64748b; font-weight: 700; line-height: 1.3; }
+
+  .remember {
+    border: 2px solid;
+    border-radius: 14px;
+    padding: 13px 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .remember .r-icon { font-size: 1.8em; }
+  .remember .r-text strong { display: block; font-size: 0.95em; font-weight: 800; margin-bottom: 3px; }
+  .remember .r-text span { font-size: 0.9em; font-weight: 700; }
+
+  .footer {
+    text-align: center;
+    font-size: 0.78em;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+
+  /* ---- EQUATION (shared) ---- */
+  .equation {
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .eq-part {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25em;
+    color: #fff;
+    text-align: center;
+  }
+  .eq-part .sub {
+    display: block;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.52em;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    margin-top: 2px;
+  }
+  .eq-arrow { font-size: 1.8em; color: #f6c90e; }
+  .eq-plus { font-family: 'Fredoka One', cursive; font-size: 1.6em; color: rgba(255,255,255,0.45); }
+
+  /* ==============================
+     PAGE 1 – PHOTOSYNTHESIS
+  ============================== */
+  .p1-header { background: #1a7f4b; }
+  .p1-idea { background: #fef9c3; border-color: #f6c90e; color: #78350f; }
+  .p1-eq { background: #0f172a; }
+  .p1-title { color: #1a7f4b; }
+  .p1-c1 { background: #fef9c3; border: 2px solid #fbbf24; }
+  .p1-c2 { background: #f0f9ff; border: 2px solid #38bdf8; }
+  .p1-c3 { background: #ecfdf5; border: 2px solid #34d399; }
+  .p1-c4 { background: #f0fdf4; border: 2px solid #22c55e; }
+  .p1-mc { background: #f8fafc; border: 2px solid #e2e8f0; }
+  .p1-rem { border-color: #e879f9; background: #fdf2f8; }
+  .p1-rem strong { color: #86198f; }
+  .p1-rem span { color: #581c87; }
+
+  /* ==============================
+     PAGE 2 – FOOD CHAINS
+  ============================== */
+  .p2-header { background: #0369a1; }
+  .p2-idea { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; }
+  .p2-title { color: #0369a1; }
+  .p2-c1 { background: #dcfce7; border: 2px solid #4ade80; }
+  .p2-c2 { background: #fef3c7; border: 2px solid #fbbf24; }
+  .p2-c3 { background: #ffedd5; border: 2px solid #fb923c; }
+  .p2-c4 { background: #fce7f3; border: 2px solid #f472b6; }
+  .p2-c5 { background: #f0fdf4; border: 2px solid #86efac; }
+  .p2-rem { border-color: #3b82f6; background: #eff6ff; }
+  .p2-rem strong { color: #1d4ed8; }
+  .p2-rem span { color: #1e3a8a; }
+
+  /* ==============================
+     PAGE 3 – ECOSYSTEMS
+  ============================== */
+  .p3-header { background: #065f46; }
+  .p3-idea { background: #ecfdf5; border-color: #10b981; color: #064e3b; }
+  .p3-title { color: #065f46; }
+  .p3-c1 { background: #ecfdf5; border: 2px solid #6ee7b7; }
+  .p3-c2 { background: #fef9c3; border: 2px solid #fde047; }
+  .p3-c3 { background: #f0f9ff; border: 2px solid #7dd3fc; }
+  .p3-c4 { background: #fdf2f8; border: 2px solid #f0abfc; }
+  .p3-rem { border-color: #10b981; background: #ecfdf5; }
+  .p3-rem strong { color: #065f46; }
+  .p3-rem span { color: #064e3b; }
+
+  /* ==============================
+     PAGE 4 – DNA
+  ============================== */
+  .p4-header { background: #6d28d9; }
+  .p4-idea { background: #f5f3ff; border-color: #8b5cf6; color: #3b0764; }
+  .p4-title { color: #6d28d9; }
+  .p4-c1 { background: #f5f3ff; border: 2px solid #c4b5fd; }
+  .p4-c2 { background: #ede9fe; border: 2px solid #a78bfa; }
+  .p4-c3 { background: #ddd6fe; border: 2px solid #8b5cf6; }
+  .p4-rem { border-color: #8b5cf6; background: #f5f3ff; }
+  .p4-rem strong { color: #5b21b6; }
+  .p4-rem span { color: #3b0764; }
+
+  /* ==============================
+     PAGE 5 – VARIATION
+  ============================== */
+  .p5-header { background: #b45309; }
+  .p5-idea { background: #fffbeb; border-color: #f59e0b; color: #78350f; }
+  .p5-title { color: #b45309; }
+  .p5-c1 { background: #fef3c7; border: 2px solid #fbbf24; }
+  .p5-c2 { background: #fff7ed; border: 2px solid #fb923c; }
+  .p5-rem { border-color: #f59e0b; background: #fffbeb; }
+  .p5-rem strong { color: #92400e; }
+  .p5-rem span { color: #78350f; }
+
+  /* ==============================
+     PAGE 6 – ADAPTATION & EVOLUTION
+  ============================== */
+  .p6-header { background: #be123c; }
+  .p6-idea { background: #fff1f2; border-color: #fb7185; color: #881337; }
+  .p6-title { color: #be123c; }
+  .p6-c1 { background: #fff1f2; border: 2px solid #fda4af; }
+  .p6-c2 { background: #fef3c7; border: 2px solid #fbbf24; }
+  .p6-c3 { background: #f0fdf4; border: 2px solid #86efac; }
+  .p6-rem { border-color: #fb7185; background: #fff1f2; }
+  .p6-rem strong { color: #9f1239; }
+  .p6-rem span { color: #881337; }
+
+  /* Chain visual */
+  .chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: #0f172a;
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .chain-item {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+  }
+  .chain-item .ci-emoji { font-size: 1.5em; display: block; }
+  .chain-item .ci-name { font-size: 0.75em; font-weight: 800; color: #fff; }
+  .chain-item .ci-role { font-size: 0.65em; color: rgba(255,255,255,0.5); font-weight: 700; }
+  .chain-arrow { font-size: 1.5em; color: #f6c90e; }
+
+  /* DNA ladder visual */
+  .dna-visual {
+    background: #1e1b4b;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+  }
+  .dna-level {
+    text-align: center;
+  }
+  .dna-level .dl-emoji { font-size: 2em; display: block; margin-bottom: 6px; }
+  .dna-level .dl-name { font-family: 'Fredoka One', cursive; font-size: 1em; color: #c4b5fd; }
+  .dna-level .dl-desc { font-size: 0.72em; color: rgba(255,255,255,0.5); font-weight: 700; }
+  .dna-arrow { font-size: 1.4em; color: #a78bfa; }
+
+  /* Natural selection steps */
+  .ns-steps {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .ns-step {
+    flex: 1;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .ns-step .ns-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5em;
+    color: #be123c;
+    display: block;
+  }
+  .ns-step .ns-text {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #334155;
+    line-height: 1.3;
+  }
+
+  /* Variation table */
+  .var-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .var-box {
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .var-box h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+  }
+  .var-box ul { list-style: none; }
+  .var-box ul li {
+    font-size: 0.88em;
+    font-weight: 700;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    color: #334155;
+  }
+  .var-box ul li:last-child { border-bottom: none; }
+  .var-cont { background: #fef3c7; border: 2px solid #fbbf24; }
+  .var-cont h3 { color: #92400e; }
+  .var-disc { background: #fff7ed; border: 2px solid #fb923c; }
+  .var-disc h3 { color: #c2410c; }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: PHOTOSYNTHESIS ==================== -->
+<div class="page">
+  <div class="header p1-header">
+    <span class="header-emoji">🌱</span>
+    <div class="header-text">
+      <h1>Photosynthesis</h1>
+      <p>How plants make their own food using sunlight</p>
+    </div>
+  </div>
+
+  <div class="big-idea p1-idea">
+    💡 Plants are the ONLY living things that make their own food — everything else depends on them!
+  </div>
+
+  <div>
+    <div class="section-title p1-title">⚗️ The Word Equation</div>
+    <div class="equation p1-eq">
+      <div class="eq-part">Carbon Dioxide<span class="sub">from the air</span></div>
+      <div class="eq-plus">+</div>
+      <div class="eq-part">Water<span class="sub">from the soil</span></div>
+      <div class="eq-arrow">☀️→</div>
+      <div class="eq-part">Glucose<span class="sub">plant's food</span></div>
+      <div class="eq-plus">+</div>
+      <div class="eq-part">Oxygen<span class="sub">released</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p1-title">🔑 4 Things Needed</div>
+    <div class="card-grid col-2">
+      <div class="card p1-c1">
+        <span class="icon">☀️</span>
+        <div class="info"><strong>Sunlight</strong><span>The energy source</span></div>
+      </div>
+      <div class="card p1-c2">
+        <span class="icon">💨</span>
+        <div class="info"><strong>Carbon Dioxide</strong><span>Enters through stomata</span></div>
+      </div>
+      <div class="card p1-c3">
+        <span class="icon">💧</span>
+        <div class="info"><strong>Water</strong><span>Absorbed through roots</span></div>
+      </div>
+      <div class="card p1-c4">
+        <span class="icon">🍃</span>
+        <div class="info"><strong>Chlorophyll</strong><span>Green pigment — traps light energy</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p1-title">🍂 Why Leaves are Perfect</div>
+    <div class="card-grid col-3">
+      <div class="mini-card p1-mc">
+        <span class="mc-icon">📐</span>
+        <strong>Broad &amp; Flat</strong>
+        <span>Big surface area to catch light</span>
+      </div>
+      <div class="mini-card p1-mc">
+        <span class="mc-icon">🟢</span>
+        <strong>Chloroplasts</strong>
+        <span>Packed at the top where light hits</span>
+      </div>
+      <div class="mini-card p1-mc">
+        <span class="mc-icon">🚪</span>
+        <strong>Stomata</strong>
+        <span>Tiny holes — let CO₂ in, O₂ out</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p1-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>"Sun + CO₂ + Water → Glucose + Oxygen" — that's the whole story!</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 1 of 6 · Photosynthesis</div>
+</div>
+
+<!-- ==================== PAGE 2: FOOD CHAINS & WEBS ==================== -->
+<div class="page">
+  <div class="header p2-header">
+    <span class="header-emoji">🦈</span>
+    <div class="header-text">
+      <h1>Food Chains &amp; Webs</h1>
+      <p>How energy moves between living things</p>
+    </div>
+  </div>
+
+  <div class="big-idea p2-idea">
+    💡 All food chains start with a PLANT (producer). Arrows show which way energy flows.
+  </div>
+
+  <div>
+    <div class="section-title p2-title">🔗 Example Food Chain</div>
+    <div class="chain">
+      <div class="chain-item">
+        <span class="ci-emoji">🌿</span>
+        <span class="ci-name">Waterweed</span>
+        <span class="ci-role">Producer</span>
+      </div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-item">
+        <span class="ci-emoji">🐟</span>
+        <span class="ci-name">Minnow</span>
+        <span class="ci-role">Primary Consumer</span>
+      </div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-item">
+        <span class="ci-emoji">🐟</span>
+        <span class="ci-name">Perch</span>
+        <span class="ci-role">Secondary Consumer</span>
+      </div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-item">
+        <span class="ci-emoji">🐠</span>
+        <span class="ci-name">Pike</span>
+        <span class="ci-role">Tertiary Consumer</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p2-title">📖 Key Words</div>
+    <div class="card-grid col-2">
+      <div class="card p2-c1">
+        <span class="icon">🌿</span>
+        <div class="info"><strong>Producer</strong><span>A plant — makes its own food from sunlight</span></div>
+      </div>
+      <div class="card p2-c2">
+        <span class="icon">🐄</span>
+        <div class="info"><strong>Primary Consumer</strong><span>Eats plants (herbivore)</span></div>
+      </div>
+      <div class="card p2-c3">
+        <span class="icon">🦊</span>
+        <div class="info"><strong>Secondary Consumer</strong><span>Eats primary consumers</span></div>
+      </div>
+      <div class="card p2-c4">
+        <span class="icon">🦁</span>
+        <div class="info"><strong>Tertiary Consumer</strong><span>Eats secondary consumers — top predator</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p2-title">🍄 Don't Forget Decomposers!</div>
+    <div class="card p2-c5" style="border-radius:14px; padding: 14px 16px;">
+      <span class="icon">🍄</span>
+      <div class="info">
+        <strong>Bacteria + Fungi = Decomposers</strong>
+        <span>They break down dead things and recycle nutrients back into the soil. Without them, ecosystems would collapse!</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p2-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>A food WEB is just lots of food chains joined together. If one organism disappears, it affects everything connected to it.</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 2 of 6 · Food Chains &amp; Webs</div>
+</div>
+
+<!-- ==================== PAGE 3: ECOSYSTEMS ==================== -->
+<div class="page">
+  <div class="header p3-header">
+    <span class="header-emoji">🌿</span>
+    <div class="header-text">
+      <h1>Ecosystems</h1>
+      <p>All living things working together in one place</p>
+    </div>
+  </div>
+
+  <div class="big-idea p3-idea">
+    💡 An ecosystem = ALL living things (plants, animals, decomposers) + the non-living environment (water, light, temperature)
+  </div>
+
+  <div>
+    <div class="section-title p3-title">⚔️ Competition</div>
+    <div class="card-grid col-2">
+      <div class="card p3-c1">
+        <span class="icon">🌿</span>
+        <div class="info">
+          <strong>Plants compete for...</strong>
+          <span>☀️ Light &nbsp;💧 Water &nbsp;🌱 Minerals &nbsp;📐 Space</span>
+        </div>
+      </div>
+      <div class="card p3-c2">
+        <span class="icon">🦁</span>
+        <div class="info">
+          <strong>Animals compete for...</strong>
+          <span>🍖 Food &nbsp;❤️ Mates &nbsp;🏠 Territory</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p3-title">♻️ Decay &amp; Decomposers</div>
+    <div class="card-grid col-3">
+      <div class="mini-card p3-c3">
+        <span class="mc-icon">🌡️</span>
+        <strong>Warm</strong>
+        <span>Heat speeds up microorganisms</span>
+      </div>
+      <div class="mini-card p3-c1">
+        <span class="mc-icon">💧</span>
+        <strong>Wet</strong>
+        <span>Water needed for decay</span>
+      </div>
+      <div class="mini-card p3-c4">
+        <span class="mc-icon">💨</span>
+        <strong>Oxygen</strong>
+        <span>Aerobic bacteria work fastest</span>
+      </div>
+    </div>
+    <p style="text-align:center; font-weight:800; font-size:0.9em; color:#475569; margin-top:8px;">Warm + Wet + Oxygen = FAST decay</p>
+  </div>
+
+  <div>
+    <div class="section-title p3-title">🌍 Biodiversity</div>
+    <div class="card-grid col-2">
+      <div class="card p3-c1">
+        <span class="icon">🌈</span>
+        <div class="info">
+          <strong>What is it?</strong>
+          <span>The variety of different living things in an area</span>
+        </div>
+      </div>
+      <div class="card p3-c2">
+        <span class="icon">📈</span>
+        <div class="info">
+          <strong>Why does it matter?</strong>
+          <span>More biodiversity = healthier, more stable ecosystem</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p3-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>Organisms in an ecosystem are INTERDEPENDENT — they all need each other to survive.</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 3 of 6 · Ecosystems</div>
+</div>
+
+<!-- ==================== PAGE 4: DNA & INHERITANCE ==================== -->
+<div class="page">
+  <div class="header p4-header">
+    <span class="header-emoji">🧬</span>
+    <div class="header-text">
+      <h1>DNA &amp; Inheritance</h1>
+      <p>The tiny instructions inside every living cell</p>
+    </div>
+  </div>
+
+  <div class="big-idea p4-idea">
+    💡 DNA is like a recipe book for your body — it controls everything about how you look and work!
+  </div>
+
+  <div>
+    <div class="section-title p4-title">🔬 From Big to Small</div>
+    <div class="dna-visual">
+      <div class="dna-level">
+        <span class="dl-emoji">🫀</span>
+        <div class="dl-name">Cell</div>
+        <div class="dl-desc">Contains a nucleus</div>
+      </div>
+      <span class="dna-arrow">→</span>
+      <div class="dna-level">
+        <span class="dl-emoji">⚙️</span>
+        <div class="dl-name">Nucleus</div>
+        <div class="dl-desc">Contains chromosomes</div>
+      </div>
+      <span class="dna-arrow">→</span>
+      <div class="dna-level">
+        <span class="dl-emoji">🧵</span>
+        <div class="dl-name">Chromosome</div>
+        <div class="dl-desc">Long strand of DNA</div>
+      </div>
+      <span class="dna-arrow">→</span>
+      <div class="dna-level">
+        <span class="dl-emoji">🧬</span>
+        <div class="dl-name">Gene</div>
+        <div class="dl-desc">Short section of DNA</div>
+      </div>
+      <span class="dna-arrow">→</span>
+      <div class="dna-level">
+        <span class="dl-emoji">👁️</span>
+        <div class="dl-name">Characteristic</div>
+        <div class="dl-desc">e.g. eye colour</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p4-title">👨‍👩‍👦 Inheritance</div>
+    <div class="card-grid col-3">
+      <div class="card p4-c1" style="border-radius:14px;">
+        <span class="icon">🧬</span>
+        <div class="info"><strong>Genes from both parents</strong><span>You get an equal mix from mum AND dad</span></div>
+      </div>
+      <div class="card p4-c2" style="border-radius:14px;">
+        <span class="icon">🔁</span>
+        <div class="info"><strong>Heredity</strong><span>When a characteristic is passed from parent to child</span></div>
+      </div>
+      <div class="card p4-c3" style="border-radius:14px;">
+        <span class="icon">👂</span>
+        <div class="info"><strong>Hereditary trait</strong><span>e.g. big ears — passed on through genes</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p4-title">🔭 Who Discovered DNA's Structure?</div>
+    <div class="card p4-c1" style="border-radius:14px; padding:14px 16px;">
+      <span class="icon">🏆</span>
+      <div class="info">
+        <strong>Crick &amp; Watson built the first model of DNA</strong>
+        <span>They used data from Franklin and Wilkins. DNA is a DOUBLE HELIX — two chains twisted together like a spiral staircase.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p4-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>Cell → Nucleus → Chromosome → Gene → Characteristic. Each gene controls one feature.</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 4 of 6 · DNA &amp; Inheritance</div>
+</div>
+
+<!-- ==================== PAGE 5: VARIATION ==================== -->
+<div class="page">
+  <div class="header p5-header">
+    <span class="header-emoji">🧑‍🤝‍🧑</span>
+    <div class="header-text">
+      <h1>Variation</h1>
+      <p>Why living things are different from each other</p>
+    </div>
+  </div>
+
+  <div class="big-idea p5-idea">
+    💡 Variation = differences between living things. These differences come from genes, environment, or BOTH.
+  </div>
+
+  <div>
+    <div class="section-title p5-title">🎭 Two Types of Variation</div>
+    <div class="var-compare">
+      <div class="var-box var-cont">
+        <h3>📈 Continuous</h3>
+        <ul>
+          <li>Can be ANY value in a range</li>
+          <li>Examples: height, weight, arm length</li>
+          <li>Shown on a LINE GRAPH</li>
+          <li>No gaps between values</li>
+        </ul>
+      </div>
+      <div class="var-box var-disc">
+        <h3>📊 Discontinuous</h3>
+        <ul>
+          <li>Only certain separate values</li>
+          <li>Examples: blood group, gender</li>
+          <li>Shown on a BAR CHART</li>
+          <li>Clear gaps — no in-between!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p5-title">🧬 Where Does Variation Come From?</div>
+    <div class="card-grid col-2">
+      <div class="card p5-c1">
+        <span class="icon">🧬</span>
+        <div class="info">
+          <strong>Genetic variation</strong>
+          <span>From your genes — e.g. eye colour, tongue rolling, blood group</span>
+        </div>
+      </div>
+      <div class="card p5-c2">
+        <span class="icon">🌍</span>
+        <div class="info">
+          <strong>Environmental variation</strong>
+          <span>From your surroundings — e.g. scars, hair style, skin tone from sun</span>
+        </div>
+      </div>
+    </div>
+    <div class="card p5-c1" style="border-radius:14px; padding:12px 16px; margin-top:10px;">
+      <span class="icon">🤝</span>
+      <div class="info">
+        <strong>Most characteristics = BOTH genes AND environment</strong>
+        <span>e.g. height is influenced by your genes AND by diet/nutrition growing up</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p5-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>Continuous = line graph, any value. Discontinuous = bar chart, set categories only.</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 5 of 6 · Variation</div>
+</div>
+
+<!-- ==================== PAGE 6: ADAPTATION & EVOLUTION ==================== -->
+<div class="page">
+  <div class="header p6-header">
+    <span class="header-emoji">🐻‍❄️</span>
+    <div class="header-text">
+      <h1>Adaptation &amp; Evolution</h1>
+      <p>How living things survive and change over time</p>
+    </div>
+  </div>
+
+  <div class="big-idea p6-idea">
+    💡 Better adapted organisms survive, reproduce, and pass on their helpful traits. Over millions of years — this is evolution!
+  </div>
+
+  <div>
+    <div class="section-title p6-title">🐾 Adaptation Examples</div>
+    <div class="card-grid col-2">
+      <div class="card p6-c1">
+        <span class="icon">🐻‍❄️</span>
+        <div class="info">
+          <strong>Polar Bear</strong>
+          <span>White fur (camouflage) · Thick fat (insulation) · Small ears (less heat loss)</span>
+        </div>
+      </div>
+      <div class="card p6-c2">
+        <span class="icon">🌵</span>
+        <div class="info">
+          <strong>Cactus</strong>
+          <span>Spines (reduce water loss + protection) · Fleshy stem (stores water) · Waxy coat (stops evaporation)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p6-title">🔬 Natural Selection (Darwin's Big Idea)</div>
+    <div class="ns-steps">
+      <div class="ns-step">
+        <span class="ns-num">1</span>
+        <span class="ns-text">Variation exists in a population</span>
+      </div>
+      <div class="ns-step">
+        <span class="ns-num">2</span>
+        <span class="ns-text">Some have helpful traits</span>
+      </div>
+      <div class="ns-step">
+        <span class="ns-num">3</span>
+        <span class="ns-text">They survive better</span>
+      </div>
+      <div class="ns-step">
+        <span class="ns-num">4</span>
+        <span class="ns-text">They reproduce more</span>
+      </div>
+      <div class="ns-step">
+        <span class="ns-num">5</span>
+        <span class="ns-text">Traits passed to offspring</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title p6-title">🦠 Evolution Evidence</div>
+    <div class="card-grid col-2">
+      <div class="card p6-c1">
+        <span class="icon">🦕</span>
+        <div class="info">
+          <strong>Fossils</strong>
+          <span>Remains in rock showing how life has changed over millions of years</span>
+        </div>
+      </div>
+      <div class="card p6-c3">
+        <span class="icon">💊</span>
+        <div class="info">
+          <strong>Antibiotic-resistant bacteria</strong>
+          <span>Natural selection happening RIGHT NOW — resistant bacteria survive and reproduce</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="remember p6-rem">
+    <span class="r-icon">🧠</span>
+    <div class="r-text">
+      <strong>Remember!</strong>
+      <span>"Survival of the fittest" — fittest means BEST ADAPTED, not strongest. Over time, this leads to evolution.</span>
+    </div>
+  </div>
+
+  <div class="footer">Xav's Revision · Topic 6 of 6 · Adaptation &amp; Evolution · Good luck Xav! 🚀</div>
+</div>
+
+</body>
+</html>
