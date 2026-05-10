@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xav's Times Tables Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f0c29;
+    --card: #1a1a3e;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --text: #ffffff;
+    --subtext: #a0a0c0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .stars {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+  .star {
+    position: absolute; background: white; border-radius: 50%;
+    animation: twinkle var(--d) ease-in-out infinite; opacity: 0;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    width: min(520px, 95vw); text-align: center;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.2rem, 8vw, 3.8rem);
+    background: linear-gradient(135deg, #ffd93d, #ff6b6b, #4d96ff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1.1; margin-bottom: 8px;
+  }
+  .subtitle { color: var(--subtext); font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 8px; margin-bottom: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px; padding: 6px;
+  }
+  .tab-btn {
+    flex: 1; padding: 10px 8px;
+    border-radius: 10px; border: none;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem;
+    cursor: pointer; transition: all 0.2s;
+    background: transparent; color: var(--subtext);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #4d96ff, #845ef7);
+    color: white;
+    box-shadow: 0 2px 12px rgba(77,150,255,0.4);
+  }
+  .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: white; }
+
+  .card {
+    background: var(--card); border-radius: 20px; padding: 24px 20px;
+    margin-bottom: 18px; border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .table-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
+  }
+  .table-btn {
+    background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px; color: white; font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem; padding: 14px 0; cursor: pointer; transition: all 0.2s;
+  }
+  .table-btn:hover { background: rgba(77,150,255,0.3); border-color: var(--accent4); }
+  .table-btn.selected { background: var(--accent4); border-color: var(--accent4); box-shadow: 0 0 16px rgba(77,150,255,0.5); }
+
+  .select-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .select-all-btn {
+    flex: 1; padding: 10px; border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);
+    color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .select-all-btn:hover { background: rgba(255,255,255,0.12); }
+
+  .btn {
+    display: inline-block; padding: 16px 40px; border-radius: 50px; border: none;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #4d96ff, #845ef7);
+    color: white; box-shadow: 0 4px 20px rgba(77,150,255,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(77,150,255,0.6); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: rgba(255,255,255,0.1); color: white;
+    border: 2px solid rgba(255,255,255,0.2); font-size: 1rem; padding: 12px 28px;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+  /* HUD */
+  .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; }
+  .hud-box { flex: 1; background: var(--card); border-radius: 14px; padding: 10px 8px; border: 1px solid rgba(255,255,255,0.08); }
+  .hud-label { font-size: 0.65rem; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.08em; }
+  .hud-value { font-family: 'Fredoka One', cursive; font-size: 1.5rem; }
+  .hud-value.score-val { color: var(--accent2); }
+  .hud-value.streak-val { color: var(--accent3); }
+  .hud-value.timer-val { color: var(--accent1); }
+
+  .timer-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 8px; height: 10px; margin-bottom: 14px; overflow: hidden; }
+  .timer-bar { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent3), var(--accent2)); transition: width 1s linear, background 1s linear; }
+
+  .question-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.8rem, 12vw, 5rem);
+    color: white; margin: 8px 0 20px; line-height: 1;
+  }
+  .q-progress { color: var(--subtext); font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+
+  /* MULTIPLE CHOICE */
+  .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .answer-btn {
+    background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 16px; color: white; font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem; padding: 20px; cursor: pointer; transition: all 0.15s;
+  }
+  .answer-btn:hover:not(:disabled) { background: rgba(77,150,255,0.25); border-color: var(--accent4); transform: scale(1.03); }
+  .answer-btn.correct { background: rgba(107,203,119,0.35); border-color: var(--accent3); animation: pop 0.3s ease; }
+  .answer-btn.wrong { background: rgba(255,107,107,0.35); border-color: var(--accent1); animation: shake 0.3s ease; }
+  .answer-btn:disabled { cursor: not-allowed; }
+
+  /* TYPE ANSWER */
+  .type-area { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .type-input {
+    width: 160px; padding: 16px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 2.5rem;
+    background: rgba(255,255,255,0.08); border: 3px solid rgba(255,255,255,0.2);
+    border-radius: 16px; color: white; outline: none; transition: all 0.2s;
+  }
+  .type-input:focus { border-color: var(--accent4); background: rgba(77,150,255,0.15); box-shadow: 0 0 20px rgba(77,150,255,0.3); }
+  .type-input.correct { border-color: var(--accent3); background: rgba(107,203,119,0.2); }
+  .type-input.wrong { border-color: var(--accent1); background: rgba(255,107,107,0.2); animation: shake 0.3s ease; }
+  .submit-btn {
+    padding: 14px 48px; border-radius: 50px; border: none;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem;
+    background: linear-gradient(135deg, #4d96ff, #845ef7);
+    color: white; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(77,150,255,0.4);
+  }
+  .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(77,150,255,0.6); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  @keyframes pop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .feedback-text { font-family: 'Fredoka One', cursive; font-size: 1.3rem; min-height: 34px; }
+  .feedback-text.good { color: var(--accent3); }
+  .feedback-text.bad { color: var(--accent1); }
+
+  .streak-banner {
+    background: linear-gradient(135deg, #ffd93d, #ff922b);
+    border-radius: 12px; padding: 10px 20px;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+    color: #1a1a00; margin-bottom: 12px; display: none; animation: pop 0.4s ease;
+  }
+
+  /* RESULTS */
+  .results-emoji { font-size: 4rem; margin-bottom: 12px; display: block; animation: pop 0.5s ease; }
+  .results-score { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--accent2); margin-bottom: 4px; }
+  .results-sub { color: var(--subtext); font-size: 1rem; margin-bottom: 24px; }
+  .results-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .stat-box { background: rgba(255,255,255,0.05); border-radius: 14px; padding: 14px 8px; }
+  .stat-val { font-family: 'Fredoka One', cursive; font-size: 1.6rem; }
+  .stat-lbl { font-size: 0.7rem; color: var(--subtext); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px; top: -10px;
+    border-radius: 2px; pointer-events: none; z-index: 999;
+    animation: confettiFall var(--fall) ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <div class="title">⚡ Times Tables Quest</div>
+    <div class="subtitle">Pick your tables and your mode!</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-mc" onclick="setMode('mc')">🎯 Pick the Answer</button>
+      <button class="tab-btn" id="tab-type" onclick="setMode('type')">⌨️ Type the Answer</button>
+    </div>
+
+    <div class="card">
+      <div class="select-row">
+        <button class="select-all-btn" onclick="selectAll()">✅ Select All</button>
+        <button class="select-all-btn" onclick="selectNone()">✖ Clear All</button>
+      </div>
+      <div class="table-grid" id="tableGrid"></div>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" onclick="startGame()" disabled>Start Quest! 🚀</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-box">
+        <div class="hud-label">Score</div>
+        <div class="hud-value score-val" id="scoreDisplay">0</div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-label">Streak 🔥</div>
+        <div class="hud-value streak-val" id="streakDisplay">0</div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-label">Time ⏱</div>
+        <div class="hud-value timer-val" id="timerDisplay">45</div>
+      </div>
+    </div>
+
+    <div class="timer-bar-wrap">
+      <div class="timer-bar" id="timerBar" style="width:100%"></div>
+    </div>
+
+    <div class="streak-banner" id="streakBanner">🔥 STREAK BONUS!</div>
+
+    <div class="card">
+      <div class="q-progress" id="qProgress">Question 1 of 15</div>
+      <div class="question-text" id="questionText">? × ?</div>
+
+      <!-- Multiple choice -->
+      <div id="mc-area">
+        <div class="answer-grid" id="answerGrid"></div>
+      </div>
+
+      <!-- Type answer -->
+      <div id="type-area" style="display:none">
+        <div class="type-area">
+          <input class="type-input" id="typeInput" type="number" min="0" placeholder="?" autocomplete="off" />
+          <button class="submit-btn" id="submitBtn" onclick="submitTyped()">Check ✓</button>
+        </div>
+      </div>
+
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="screen" id="screen-results">
+    <div class="card">
+      <span class="results-emoji" id="resultsEmoji">🏆</span>
+      <div class="results-score" id="resultsScore">0</div>
+      <div class="results-sub" id="resultsSub">points scored!</div>
+      <div class="results-stats">
+        <div class="stat-box">
+          <div class="stat-val" id="statCorrect" style="color:#6bcb77">0</div>
+          <div class="stat-lbl">Correct</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statWrong" style="color:#ff6b6b">0</div>
+          <div class="stat-lbl">Wrong</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statBest" style="color:#ffd93d">0</div>
+          <div class="stat-lbl">Best Streak</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="startGame()">Play Again 🔄</button>
+        <button class="btn btn-secondary" onclick="goHome()">Change Tables</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 3 + 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;
+    starsEl.appendChild(s);
+  }
+
+  // Mode
+  let gameMode = 'mc';
+  function setMode(m) {
+    gameMode = m;
+    document.getElementById('tab-mc').classList.toggle('active', m === 'mc');
+    document.getElementById('tab-type').classList.toggle('active', m === 'type');
+  }
+
+  // Table selector
+  const selectedTables = new Set();
+  const tableGrid = document.getElementById('tableGrid');
+  for (let i = 1; i <= 12; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'table-btn';
+    btn.textContent = i;
+    btn.onclick = () => toggleTable(i, btn);
+    tableGrid.appendChild(btn);
+  }
+
+  function toggleTable(n, btn) {
+    if (selectedTables.has(n)) { selectedTables.delete(n); btn.classList.remove('selected'); }
+    else { selectedTables.add(n); btn.classList.add('selected'); }
+    document.getElementById('startBtn').disabled = selectedTables.size === 0;
+  }
+  function selectAll() {
+    document.querySelectorAll('.table-btn').forEach((btn, i) => { selectedTables.add(i+1); btn.classList.add('selected'); });
+    document.getElementById('startBtn').disabled = false;
+  }
+  function selectNone() {
+    document.querySelectorAll('.table-btn').forEach(btn => btn.classList.remove('selected'));
+    selectedTables.clear();
+    document.getElementById('startBtn').disabled = true;
+  }
+
+  // Game state
+  const TOTAL_Q = 15;
+  const TIME_PER_Q = 45;
+  let score, streak, bestStreak, numCorrect, numWrong;
+  let timeLeft, timerInterval, qNumber, answered, currentCorrect;
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startGame() {
+    score = 0; streak = 0; bestStreak = 0; numCorrect = 0; numWrong = 0; qNumber = 0;
+    // Show correct input mode
+    document.getElementById('mc-area').style.display = gameMode === 'mc' ? 'block' : 'none';
+    document.getElementById('type-area').style.display = gameMode === 'type' ? 'block' : 'none';
+    showScreen('screen-game');
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    if (qNumber >= TOTAL_Q) { endGame(); return; }
+    qNumber++;
+    answered = false;
+
+    document.getElementById('feedbackText').textContent = '';
+    document.getElementById('feedbackText').className = 'feedback-text';
+    document.getElementById('streakBanner').style.display = 'none';
+    document.getElementById('qProgress').textContent = `Question ${qNumber} of ${TOTAL_Q}`;
+
+    const tables = [...selectedTables];
+    const a = tables[Math.floor(Math.random() * tables.length)];
+    const b = Math.floor(Math.random() * 12) + 1;
+    currentCorrect = a * b;
+    document.getElementById('questionText').textContent = `${a} × ${b}`;
+
+    if (gameMode === 'mc') {
+      buildMultipleChoice(currentCorrect);
+    } else {
+      buildTypeInput();
+    }
+
+    startTimer();
+  }
+
+  function buildMultipleChoice(correctAns) {
+    const opts = new Set([correctAns]);
+    let attempts = 0;
+    while (opts.size < 4 && attempts < 200) {
+      attempts++;
+      const offset = Math.floor(Math.random() * 24) - 12;
+      const c = correctAns + offset;
+      if (c > 0 && c !== correctAns) opts.add(c);
+    }
+    const shuffled = [...opts].sort(() => Math.random() - 0.5);
+    const grid = document.getElementById('answerGrid');
+    grid.innerHTML = '';
+    shuffled.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = opt;
+      btn.onclick = () => checkMC(opt, correctAns, btn);
+      grid.appendChild(btn);
+    });
+  }
+
+  function buildTypeInput() {
+    const inp = document.getElementById('typeInput');
+    inp.value = '';
+    inp.className = 'type-input';
+    inp.disabled = false;
+    document.getElementById('submitBtn').disabled = false;
+    setTimeout(() => inp.focus(), 100);
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = TIME_PER_Q;
+    document.getElementById('timerDisplay').textContent = timeLeft;
+    updateTimerBar();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      document.getElementById('timerDisplay').textContent = timeLeft;
+      updateTimerBar();
+      if (timeLeft <= 0) { clearInterval(timerInterval); if (!answered) timeUp(); }
+    }, 1000);
+  }
+
+  function updateTimerBar() {
+    const pct = (timeLeft / TIME_PER_Q) * 100;
+    const bar = document.getElementById('timerBar');
+    bar.style.width = pct + '%';
+    bar.style.background = pct > 60
+      ? 'linear-gradient(90deg,#6bcb77,#ffd93d)'
+      : pct > 30
+        ? 'linear-gradient(90deg,#ffd93d,#ff922b)'
+        : 'linear-gradient(90deg,#ff922b,#ff6b6b)';
+  }
+
+  // Multiple choice check
+  function checkMC(chosen, correct, chosenBtn) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timerInterval);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    if (chosen === correct) {
+      chosenBtn.classList.add('correct');
+      handleCorrect();
+    } else {
+      chosenBtn.classList.add('wrong');
+      document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.textContent) === correct) b.classList.add('correct'); });
+      handleWrong(`The answer was ${correct} — keep going! 💙`);
+    }
+    setTimeout(nextQuestion, 1700);
+  }
+
+  // Type answer submit
+  function submitTyped() {
+    if (answered) return;
+    const inp = document.getElementById('typeInput');
+    const val = parseInt(inp.value);
+    if (isNaN(val) || inp.value.trim() === '') return;
+
+    answered = true;
+    clearInterval(timerInterval);
+    inp.disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+
+    if (val === currentCorrect) {
+      inp.classList.add('correct');
+      handleCorrect();
+    } else {
+      inp.classList.add('wrong');
+      handleWrong(`Not quite — it was ${currentCorrect}. Keep going! 💙`);
+    }
+    setTimeout(nextQuestion, 1700);
+  }
+
+  // Enter key support for typed mode
+  document.getElementById('typeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitTyped();
+  });
+
+  function handleCorrect() {
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    numCorrect++;
+    const bonus = (streak >= 3 ? 5 : 0) + Math.floor(timeLeft / 5);
+    const pts = 10 + bonus;
+    score += pts;
+    updateHUD();
+    if (streak >= 3) {
+      const banner = document.getElementById('streakBanner');
+      banner.textContent = `🔥 ${streak} in a row! +${pts} points!`;
+      banner.style.display = 'block';
+    }
+    const msgs = ['Brilliant! ⭐', 'Nailed it! 💥', 'Yes! 🎉', 'Amazing! 🚀', 'Superstar! ✨', 'Smashed it! 💪', 'Fantastic! 🌟'];
+    setFeedback(msgs[Math.floor(Math.random() * msgs.length)], 'good');
+  }
+
+  function handleWrong(msg) {
+    streak = 0; numWrong++;
+    updateHUD();
+    setFeedback(msg, 'bad');
+  }
+
+  function timeUp() {
+    answered = true;
+    if (gameMode === 'type') {
+      document.getElementById('typeInput').disabled = true;
+      document.getElementById('submitBtn').disabled = true;
+    } else {
+      document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    }
+    streak = 0; numWrong++;
+    updateHUD();
+    setFeedback("⏰ Time's up! Next one...", 'bad');
+    setTimeout(nextQuestion, 1500);
+  }
+
+  function setFeedback(msg, cls) {
+    const el = document.getElementById('feedbackText');
+    el.textContent = msg;
+    el.className = 'feedback-text ' + cls;
+  }
+
+  function updateHUD() {
+    document.getElementById('scoreDisplay').textContent = score;
+    document.getElementById('streakDisplay').textContent = streak;
+  }
+
+  function endGame() {
+    clearInterval(timerInterval);
+    const pct = Math.round((numCorrect / TOTAL_Q) * 100);
+    const emojis = pct >= 90 ? '🏆' : pct >= 70 ? '🌟' : pct >= 50 ? '💪' : '🎮';
+    const subs = pct >= 90 ? 'Absolutely incredible, Xav!' : pct >= 70 ? 'Really great work!' : pct >= 50 ? 'Good effort — keep going!' : 'Practice makes perfect!';
+    document.getElementById('resultsEmoji').textContent = emojis;
+    document.getElementById('resultsScore').textContent = score;
+    document.getElementById('resultsSub').textContent = subs;
+    document.getElementById('statCorrect').textContent = numCorrect;
+    document.getElementById('statWrong').textContent = numWrong;
+    document.getElementById('statBest').textContent = bestStreak;
+    if (pct >= 70) launchConfetti();
+    showScreen('screen-results');
+  }
+
+  function goHome() { clearInterval(timerInterval); showScreen('screen-start'); }
+
+  function launchConfetti() {
+    const colours = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#845ef7','#ff922b'];
+    for (let i = 0; i < 70; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.cssText = `left:${Math.random()*100}%;background:${colours[Math.floor(Math.random()*colours.length)]};--fall:${1.5+Math.random()*2}s;transform:rotate(${Math.random()*360}deg)`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 4000);
+      }, i * 35);
+    }
+  }
+</script>
+</body>
+</html>
