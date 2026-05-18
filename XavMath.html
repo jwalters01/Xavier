@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xav's Maths Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f0c29;
+    --card: #1a1a3e;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --accent5: #ff922b;
+    --text: #ffffff;
+    --subtext: #a0a0c0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .stars { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .star { position:absolute; background:white; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; opacity:0; }
+  @keyframes twinkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:1;transform:scale(1)} }
+
+  .container { position:relative; z-index:1; width:min(540px,96vw); text-align:center; padding: 16px 0; }
+
+  .screen { display:none; }
+  .screen.active { display:block; animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+  .title {
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(2rem,8vw,3.5rem);
+    background:linear-gradient(135deg,#ffd93d,#ff6b6b,#4d96ff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    line-height:1.1; margin-bottom:6px;
+  }
+  .subtitle { color:var(--subtext); font-size:0.95rem; font-weight:600; margin-bottom:18px; }
+
+  /* MODE TABS */
+  .mode-tabs {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:16px;
+    background:rgba(255,255,255,0.04); border-radius:14px; padding:6px;
+  }
+  .mode-tab {
+    padding:10px 4px; border-radius:10px; border:none;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:0.78rem;
+    cursor:pointer; transition:all 0.2s; background:transparent; color:var(--subtext);
+    line-height:1.3;
+  }
+  .mode-tab.active { background:linear-gradient(135deg,#4d96ff,#845ef7); color:white; box-shadow:0 2px 12px rgba(77,150,255,0.4); }
+  .mode-tab:hover:not(.active) { background:rgba(255,255,255,0.08); color:white; }
+
+  /* INPUT TYPE TOGGLE (pick vs type) */
+  .input-toggle {
+    display:flex; gap:8px; margin-bottom:16px;
+    background:rgba(255,255,255,0.04); border-radius:12px; padding:5px;
+  }
+  .input-toggle-btn {
+    flex:1; padding:9px; border-radius:9px; border:none;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem;
+    cursor:pointer; transition:all 0.2s; background:transparent; color:var(--subtext);
+  }
+  .input-toggle-btn.active { background:rgba(255,255,255,0.15); color:white; }
+  .input-toggle-btn:hover:not(.active) { background:rgba(255,255,255,0.08); color:white; }
+
+  .card {
+    background:var(--card); border-radius:18px; padding:22px 18px;
+    margin-bottom:16px; border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* TABLE / BOND SELECTOR */
+  .selector-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+  .selector-grid.bonds-grid { grid-template-columns:repeat(3,1fr); }
+  .sel-btn {
+    background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15);
+    border-radius:11px; color:white; font-family:'Fredoka One',cursive;
+    font-size:1.1rem; padding:12px 0; cursor:pointer; transition:all 0.2s;
+  }
+  .sel-btn:hover { background:rgba(77,150,255,0.3); border-color:var(--accent4); }
+  .sel-btn.selected { background:var(--accent4); border-color:var(--accent4); box-shadow:0 0 14px rgba(77,150,255,0.5); }
+
+  .select-row { display:flex; gap:8px; margin-bottom:14px; }
+  .select-all-btn {
+    flex:1; padding:9px; border-radius:9px;
+    border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05);
+    color:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.85rem;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .select-all-btn:hover { background:rgba(255,255,255,0.12); }
+
+  .section-label { color:var(--subtext); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; }
+
+  .btn {
+    display:inline-block; padding:15px 38px; border-radius:50px; border:none;
+    font-family:'Fredoka One',cursive; font-size:1.25rem; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-primary { background:linear-gradient(135deg,#4d96ff,#845ef7); color:white; box-shadow:0 4px 20px rgba(77,150,255,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(77,150,255,0.6); }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-secondary { background:rgba(255,255,255,0.1); color:white; border:2px solid rgba(255,255,255,0.2); font-size:0.95rem; padding:11px 26px; }
+  .btn-secondary:hover { background:rgba(255,255,255,0.2); }
+
+  /* HUD */
+  .hud { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; }
+  .hud-box { flex:1; background:var(--card); border-radius:12px; padding:9px 6px; border:1px solid rgba(255,255,255,0.08); }
+  .hud-label { font-size:0.6rem; font-weight:700; color:var(--subtext); text-transform:uppercase; letter-spacing:0.08em; }
+  .hud-value { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .hud-value.score-val { color:var(--accent2); }
+  .hud-value.streak-val { color:var(--accent3); }
+  .hud-value.timer-val { color:var(--accent1); }
+
+  .timer-bar-wrap { background:rgba(255,255,255,0.1); border-radius:8px; height:9px; margin-bottom:12px; overflow:hidden; }
+  .timer-bar { height:100%; border-radius:8px; background:linear-gradient(90deg,#6bcb77,#ffd93d); transition:width 1s linear, background 1s linear; }
+
+  .streak-banner {
+    background:linear-gradient(135deg,#ffd93d,#ff922b); border-radius:11px;
+    padding:9px 18px; font-family:'Fredoka One',cursive; font-size:1rem;
+    color:#1a1a00; margin-bottom:10px; display:none; animation:pop 0.4s ease;
+  }
+
+  .q-progress { color:var(--subtext); font-size:0.8rem; font-weight:700; margin-bottom:4px; }
+  .question-text {
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(2.5rem,11vw,4.5rem);
+    color:white; margin:8px 0 18px; line-height:1;
+  }
+
+  /* MULTIPLE CHOICE */
+  .answer-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .answer-btn {
+    background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15);
+    border-radius:14px; color:white; font-family:'Fredoka One',cursive;
+    font-size:1.7rem; padding:18px; cursor:pointer; transition:all 0.15s;
+  }
+  .answer-btn:hover:not(:disabled) { background:rgba(77,150,255,0.25); border-color:var(--accent4); transform:scale(1.03); }
+  .answer-btn.correct { background:rgba(107,203,119,0.35); border-color:var(--accent3); animation:pop 0.3s ease; }
+  .answer-btn.wrong { background:rgba(255,107,107,0.35); border-color:var(--accent1); animation:shake 0.3s ease; }
+  .answer-btn:disabled { cursor:not-allowed; }
+
+  /* TYPE INPUT */
+  .type-area { display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:12px; }
+  .type-input {
+    width:150px; padding:14px; text-align:center;
+    font-family:'Fredoka One',cursive; font-size:2.4rem;
+    background:rgba(255,255,255,0.08); border:3px solid rgba(255,255,255,0.2);
+    border-radius:14px; color:white; outline:none; transition:all 0.2s;
+  }
+  .type-input:focus { border-color:var(--accent4); background:rgba(77,150,255,0.15); box-shadow:0 0 18px rgba(77,150,255,0.3); }
+  .type-input.correct { border-color:var(--accent3); background:rgba(107,203,119,0.2); }
+  .type-input.wrong { border-color:var(--accent1); background:rgba(255,107,107,0.2); animation:shake 0.3s ease; }
+  .submit-btn {
+    padding:13px 44px; border-radius:50px; border:none;
+    font-family:'Fredoka One',cursive; font-size:1.2rem;
+    background:linear-gradient(135deg,#4d96ff,#845ef7);
+    color:white; cursor:pointer; transition:all 0.2s;
+    box-shadow:0 4px 16px rgba(77,150,255,0.4);
+  }
+  .submit-btn:hover:not(:disabled) { transform:translateY(-2px); }
+  .submit-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+  @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .feedback-text { font-family:'Fredoka One',cursive; font-size:1.2rem; min-height:32px; }
+  .feedback-text.good { color:var(--accent3); }
+  .feedback-text.bad { color:var(--accent1); }
+
+  /* RESULTS */
+  .results-emoji { font-size:3.8rem; margin-bottom:10px; display:block; animation:pop 0.5s ease; }
+  .results-score { font-family:'Fredoka One',cursive; font-size:2.8rem; color:var(--accent2); margin-bottom:4px; }
+  .results-sub { color:var(--subtext); font-size:0.95rem; margin-bottom:20px; }
+  .results-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+  .stat-box { background:rgba(255,255,255,0.05); border-radius:12px; padding:12px 6px; }
+  .stat-val { font-family:'Fredoka One',cursive; font-size:1.5rem; }
+  .stat-lbl { font-size:0.65rem; color:var(--subtext); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+  .btn-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+  .confetti-piece {
+    position:fixed; width:10px; height:10px; top:-10px;
+    border-radius:2px; pointer-events:none; z-index:999;
+    animation:confettiFall var(--fall) ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0%{transform:translateY(0) rotate(0deg);opacity:1}
+    100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+  }
+
+  /* Helper hidden */
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <!-- ===== START SCREEN ===== -->
+  <div class="screen active" id="screen-start">
+    <div class="title">⚡ Xav's Maths Quest</div>
+    <div class="subtitle">Pick a mode and go!</div>
+
+    <!-- Mode selector -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="mtab-times" onclick="setMode('times')">✖️ Times<br>Tables</button>
+      <button class="mode-tab" id="mtab-division" onclick="setMode('division')">➗ Division</button>
+      <button class="mode-tab" id="mtab-bonds" onclick="setMode('bonds')">🔢 Number<br>Bonds</button>
+    </div>
+
+    <!-- Pick vs Type toggle (times + division) -->
+    <div class="input-toggle" id="inputToggle">
+      <button class="input-toggle-btn active" id="itab-pick" onclick="setInputMode('pick')">🎯 Pick the Answer</button>
+      <button class="input-toggle-btn" id="itab-type" onclick="setInputMode('type')">⌨️ Type the Answer</button>
+    </div>
+
+    <!-- Times Tables selector -->
+    <div class="card" id="timesSelector">
+      <div class="section-label">Which tables?</div>
+      <div class="select-row">
+        <button class="select-all-btn" onclick="selectAll('times')">✅ All</button>
+        <button class="select-all-btn" onclick="selectNone('times')">✖ Clear</button>
+      </div>
+      <div class="selector-grid" id="timesGrid"></div>
+    </div>
+
+    <!-- Division selector -->
+    <div class="card hidden" id="divisionSelector">
+      <div class="section-label">Divide by which numbers?</div>
+      <div class="select-row">
+        <button class="select-all-btn" onclick="selectAll('division')">✅ All</button>
+        <button class="select-all-btn" onclick="selectNone('division')">✖ Clear</button>
+      </div>
+      <div class="selector-grid" id="divisionGrid"></div>
+    </div>
+
+    <!-- Number bonds selector -->
+    <div class="card hidden" id="bondsSelector">
+      <div class="section-label">Number bonds to…</div>
+      <div class="selector-grid bonds-grid" id="bondsGrid"></div>
+      <p style="color:var(--subtext);font-size:0.8rem;margin-top:10px;">Tip: start with 10, then 20!</p>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" onclick="startGame()" disabled>Start Quest! 🚀</button>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-box">
+        <div class="hud-label">Score</div>
+        <div class="hud-value score-val" id="scoreDisplay">0</div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-label">Streak 🔥</div>
+        <div class="hud-value streak-val" id="streakDisplay">0</div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-label">Time ⏱</div>
+        <div class="hud-value timer-val" id="timerDisplay">45</div>
+      </div>
+    </div>
+
+    <div class="timer-bar-wrap">
+      <div class="timer-bar" id="timerBar" style="width:100%"></div>
+    </div>
+
+    <div class="streak-banner" id="streakBanner"></div>
+
+    <div class="card">
+      <div class="q-progress" id="qProgress">Question 1 of 15</div>
+      <div class="question-text" id="questionText">? × ?</div>
+
+      <div id="mc-area">
+        <div class="answer-grid" id="answerGrid"></div>
+      </div>
+
+      <div id="type-area" class="hidden">
+        <div class="type-area">
+          <input class="type-input" id="typeInput" type="number" min="0" placeholder="?" autocomplete="off" />
+          <button class="submit-btn" id="submitBtn" onclick="submitTyped()">Check ✓</button>
+        </div>
+      </div>
+
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS SCREEN ===== -->
+  <div class="screen" id="screen-results">
+    <div class="card">
+      <span class="results-emoji" id="resultsEmoji">🏆</span>
+      <div class="results-score" id="resultsScore">0</div>
+      <div class="results-sub" id="resultsSub">points scored!</div>
+      <div class="results-stats">
+        <div class="stat-box">
+          <div class="stat-val" id="statCorrect" style="color:#6bcb77">0</div>
+          <div class="stat-lbl">Correct</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statWrong" style="color:#ff6b6b">0</div>
+          <div class="stat-lbl">Wrong</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statBest" style="color:#ffd93d">0</div>
+          <div class="stat-lbl">Best Streak</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="startGame()">Play Again 🔄</button>
+        <button class="btn btn-secondary" onclick="goHome()">Change Mode</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- Stars ----
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const sz = Math.random() * 3 + 1;
+  s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;
+  starsEl.appendChild(s);
+}
+
+// ---- State ----
+let gameMode = 'times';       // 'times' | 'division' | 'bonds'
+let inputMode = 'pick';        // 'pick' | 'type'
+const selectedTimes = new Set();
+const selectedDivision = new Set();
+const selectedBonds = new Set();
+
+// Build times grid (1-12)
+const timesGrid = document.getElementById('timesGrid');
+for (let i = 1; i <= 12; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'sel-btn'; btn.textContent = i;
+  btn.onclick = () => toggle(i, btn, selectedTimes, 'times');
+  timesGrid.appendChild(btn);
+}
+
+// Build division grid (2-12)
+const divisionGrid = document.getElementById('divisionGrid');
+for (let i = 2; i <= 12; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'sel-btn'; btn.textContent = i;
+  btn.onclick = () => toggle(i, btn, selectedDivision, 'division');
+  divisionGrid.appendChild(btn);
+}
+
+// Build bonds grid (10, 20, 50, 100)
+const bondValues = [10, 20, 50, 100];
+const bondsGrid = document.getElementById('bondsGrid');
+bondValues.forEach(v => {
+  const btn = document.createElement('button');
+  btn.className = 'sel-btn'; btn.textContent = v;
+  btn.onclick = () => toggle(v, btn, selectedBonds, 'bonds');
+  bondsGrid.appendChild(btn);
+});
+
+function toggle(n, btn, set, mode) {
+  if (set.has(n)) { set.delete(n); btn.classList.remove('selected'); }
+  else { set.add(n); btn.classList.add('selected'); }
+  updateStartBtn();
+}
+
+function selectAll(mode) {
+  if (mode === 'times') {
+    document.querySelectorAll('#timesGrid .sel-btn').forEach((btn, i) => { selectedTimes.add(i+1); btn.classList.add('selected'); });
+  } else if (mode === 'division') {
+    document.querySelectorAll('#divisionGrid .sel-btn').forEach((btn, i) => { selectedDivision.add(i+2); btn.classList.add('selected'); });
+  }
+  updateStartBtn();
+}
+
+function selectNone(mode) {
+  if (mode === 'times') {
+    document.querySelectorAll('#timesGrid .sel-btn').forEach(btn => btn.classList.remove('selected'));
+    selectedTimes.clear();
+  } else if (mode === 'division') {
+    document.querySelectorAll('#divisionGrid .sel-btn').forEach(btn => btn.classList.remove('selected'));
+    selectedDivision.clear();
+  }
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  let ok = false;
+  if (gameMode === 'times') ok = selectedTimes.size > 0;
+  else if (gameMode === 'division') ok = selectedDivision.size > 0;
+  else if (gameMode === 'bonds') ok = selectedBonds.size > 0;
+  document.getElementById('startBtn').disabled = !ok;
+}
+
+function setMode(m) {
+  gameMode = m;
+  ['times','division','bonds'].forEach(x => {
+    document.getElementById(`mtab-${x}`).classList.toggle('active', x === m);
+  });
+  document.getElementById('timesSelector').classList.toggle('hidden', m !== 'times');
+  document.getElementById('divisionSelector').classList.toggle('hidden', m !== 'division');
+  document.getElementById('bondsSelector').classList.toggle('hidden', m !== 'bonds');
+  // Hide pick/type toggle for bonds (bonds only does type)
+  document.getElementById('inputToggle').classList.toggle('hidden', m === 'bonds');
+  updateStartBtn();
+}
+
+function setInputMode(im) {
+  inputMode = im;
+  document.getElementById('itab-pick').classList.toggle('active', im === 'pick');
+  document.getElementById('itab-type').classList.toggle('active', im === 'type');
+}
+
+// ---- Game ----
+const TOTAL_Q = 15;
+const TIME_PER_Q = 45;
+let score, streak, bestStreak, numCorrect, numWrong;
+let timeLeft, timerInterval, qNumber, answered, currentCorrect;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  score = 0; streak = 0; bestStreak = 0; numCorrect = 0; numWrong = 0; qNumber = 0;
+  // Number bonds always type
+  const effectiveInput = gameMode === 'bonds' ? 'type' : inputMode;
+  document.getElementById('mc-area').classList.toggle('hidden', effectiveInput !== 'pick');
+  document.getElementById('type-area').classList.toggle('hidden', effectiveInput !== 'type');
+  showScreen('screen-game');
+  nextQuestion();
+}
+
+function generateQuestion() {
+  if (gameMode === 'times') {
+    const tables = [...selectedTimes];
+    const a = tables[Math.floor(Math.random() * tables.length)];
+    const b = Math.floor(Math.random() * 12) + 1;
+    return { question: `${a} × ${b}`, answer: a * b, context: { a, b } };
+  }
+  if (gameMode === 'division') {
+    const divisors = [...selectedDivision];
+    const divisor = divisors[Math.floor(Math.random() * divisors.length)];
+    const quotient = Math.floor(Math.random() * 12) + 1;
+    const dividend = divisor * quotient;
+    return { question: `${dividend} ÷ ${divisor}`, answer: quotient };
+  }
+  if (gameMode === 'bonds') {
+    const bonds = [...selectedBonds];
+    const target = bonds[Math.floor(Math.random() * bonds.length)];
+    const a = Math.floor(Math.random() * (target - 1)) + 1;
+    return { question: `${a} + ? = ${target}`, answer: target - a };
+  }
+}
+
+function nextQuestion() {
+  if (qNumber >= TOTAL_Q) { endGame(); return; }
+  qNumber++;
+  answered = false;
+  document.getElementById('feedbackText').textContent = '';
+  document.getElementById('feedbackText').className = 'feedback-text';
+  document.getElementById('streakBanner').style.display = 'none';
+  document.getElementById('qProgress').textContent = `Question ${qNumber} of ${TOTAL_Q}`;
+
+  const q = generateQuestion();
+  currentCorrect = q.answer;
+  document.getElementById('questionText').textContent = q.question;
+
+  const effectiveInput = gameMode === 'bonds' ? 'type' : inputMode;
+  if (effectiveInput === 'pick') {
+    buildMC(currentCorrect);
+  } else {
+    buildType();
+  }
+  startTimer();
+}
+
+function buildMC(correct) {
+  const opts = new Set([correct]);
+  let att = 0;
+  while (opts.size < 4 && att < 300) {
+    att++;
+    const offset = Math.floor(Math.random() * 24) - 12;
+    const c = correct + offset;
+    if (c > 0 && c !== correct) opts.add(c);
+  }
+  const shuffled = [...opts].sort(() => Math.random() - 0.5);
+  const grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  shuffled.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.onclick = () => checkMC(opt, correct, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function buildType() {
+  const inp = document.getElementById('typeInput');
+  inp.value = ''; inp.className = 'type-input'; inp.disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+  setTimeout(() => inp.focus(), 80);
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = TIME_PER_Q;
+  document.getElementById('timerDisplay').textContent = timeLeft;
+  updateTimerBar();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timerDisplay').textContent = timeLeft;
+    updateTimerBar();
+    if (timeLeft <= 0) { clearInterval(timerInterval); if (!answered) timeUp(); }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = (timeLeft / TIME_PER_Q) * 100;
+  const bar = document.getElementById('timerBar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 60 ? 'linear-gradient(90deg,#6bcb77,#ffd93d)' :
+    pct > 30 ? 'linear-gradient(90deg,#ffd93d,#ff922b)' :
+    'linear-gradient(90deg,#ff922b,#ff6b6b)';
+}
+
+function checkMC(chosen, correct, chosenBtn) {
+  if (answered) return;
+  answered = true; clearInterval(timerInterval);
+  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+  if (chosen === correct) {
+    chosenBtn.classList.add('correct'); handleCorrect();
+  } else {
+    chosenBtn.classList.add('wrong');
+    document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.textContent) === correct) b.classList.add('correct'); });
+    handleWrong(`The answer was ${correct} — keep going! 💙`);
+  }
+  setTimeout(nextQuestion, 1700);
+}
+
+function submitTyped() {
+  if (answered) return;
+  const inp = document.getElementById('typeInput');
+  const val = parseInt(inp.value);
+  if (isNaN(val) || inp.value.trim() === '') return;
+  answered = true; clearInterval(timerInterval);
+  inp.disabled = true; document.getElementById('submitBtn').disabled = true;
+  if (val === currentCorrect) {
+    inp.classList.add('correct'); handleCorrect();
+  } else {
+    inp.classList.add('wrong');
+    handleWrong(`Not quite — it was ${currentCorrect}. Keep going! 💙`);
+  }
+  setTimeout(nextQuestion, 1700);
+}
+
+document.getElementById('typeInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitTyped(); });
+
+function handleCorrect() {
+  streak++; if (streak > bestStreak) bestStreak = streak; numCorrect++;
+  const bonus = (streak >= 3 ? 5 : 0) + Math.floor(timeLeft / 5);
+  const pts = 10 + bonus; score += pts; updateHUD();
+  if (streak >= 3) {
+    const b = document.getElementById('streakBanner');
+    b.textContent = `🔥 ${streak} in a row! +${pts} points!`;
+    b.style.display = 'block';
+  }
+  const msgs = ['Brilliant! ⭐','Nailed it! 💥','Yes! 🎉','Amazing! 🚀','Superstar! ✨','Smashed it! 💪','Fantastic! 🌟'];
+  setFeedback(msgs[Math.floor(Math.random()*msgs.length)], 'good');
+}
+
+function handleWrong(msg) {
+  streak = 0; numWrong++; updateHUD(); setFeedback(msg, 'bad');
+}
+
+function timeUp() {
+  answered = true;
+  const effectiveInput = gameMode === 'bonds' ? 'type' : inputMode;
+  if (effectiveInput === 'type') {
+    document.getElementById('typeInput').disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+  } else {
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+  }
+  streak = 0; numWrong++; updateHUD();
+  setFeedback("⏰ Time's up! Next one...", 'bad');
+  setTimeout(nextQuestion, 1500);
+}
+
+function setFeedback(msg, cls) {
+  const el = document.getElementById('feedbackText');
+  el.textContent = msg; el.className = 'feedback-text ' + cls;
+}
+
+function updateHUD() {
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('streakDisplay').textContent = streak;
+}
+
+function endGame() {
+  clearInterval(timerInterval);
+  const pct = Math.round((numCorrect / TOTAL_Q) * 100);
+  const emojis = pct >= 90 ? '🏆' : pct >= 70 ? '🌟' : pct >= 50 ? '💪' : '🎮';
+  const subs = pct >= 90 ? 'Absolutely incredible, Xav!' : pct >= 70 ? 'Really great work!' : pct >= 50 ? 'Good effort — keep going!' : 'Practice makes perfect!';
+  document.getElementById('resultsEmoji').textContent = emojis;
+  document.getElementById('resultsScore').textContent = score;
+  document.getElementById('resultsSub').textContent = subs;
+  document.getElementById('statCorrect').textContent = numCorrect;
+  document.getElementById('statWrong').textContent = numWrong;
+  document.getElementById('statBest').textContent = bestStreak;
+  if (pct >= 70) launchConfetti();
+  showScreen('screen-results');
+}
+
+function goHome() { clearInterval(timerInterval); showScreen('screen-start'); }
+
+function launchConfetti() {
+  const colours = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#845ef7','#ff922b'];
+  for (let i = 0; i < 70; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;background:${colours[Math.floor(Math.random()*colours.length)]};--fall:${1.5+Math.random()*2}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 4000);
+    }, i * 35);
+  }
+}
+</script>
+</body>
+</html>
