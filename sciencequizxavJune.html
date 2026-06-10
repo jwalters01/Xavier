@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xav's Science Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+  :root {
+    --bg:#0f0c29; --card:#1a1a3e; --accent1:#ff6b6b; --accent2:#ffd93d;
+    --accent3:#6bcb77; --accent4:#4d96ff; --text:#ffffff; --subtext:#a0a0c0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow-x:hidden; position:relative; }
+  .stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .star { position:absolute; background:white; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; opacity:0; }
+  @keyframes twinkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:1;transform:scale(1)} }
+  .container { position:relative; z-index:1; width:min(560px,96vw); text-align:center; padding:16px 0; }
+  .screen { display:none; }
+  .screen.active { display:block; animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .title { font-family:'Fredoka One',cursive; font-size:clamp(2rem,8vw,3.5rem); background:linear-gradient(135deg,#ffd93d,#ff6b6b,#4d96ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; margin-bottom:6px; }
+  .subtitle { color:var(--subtext); font-size:0.95rem; font-weight:600; margin-bottom:18px; }
+  .card { background:var(--card); border-radius:18px; padding:22px 18px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  /* Topic selector */
+  .topic-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+  .topic-btn { background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.12); border-radius:12px; color:white; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.72rem; padding:10px 6px; cursor:pointer; transition:all 0.2s; line-height:1.3; }
+  .topic-btn:hover { background:rgba(77,150,255,0.25); border-color:var(--accent4); }
+  .topic-btn.selected { background:var(--accent4); border-color:var(--accent4); box-shadow:0 0 12px rgba(77,150,255,0.5); }
+  .select-row { display:flex; gap:8px; margin-bottom:12px; }
+  .sel-all-btn { flex:1; padding:8px; border-radius:9px; border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s; }
+  .sel-all-btn:hover { background:rgba(255,255,255,0.12); }
+  /* Difficulty */
+  .diff-row { display:flex; gap:8px; margin-bottom:14px; }
+  .diff-btn { flex:1; padding:9px; border-radius:10px; border:2px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:var(--subtext); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s; }
+  .diff-btn.selected { color:white; }
+  .diff-btn.easy.selected { background:#2ecc71; border-color:#2ecc71; }
+  .diff-btn.medium.selected { background:#f39c12; border-color:#f39c12; }
+  .diff-btn.hard.selected { background:#e74c3c; border-color:#e74c3c; }
+  /* Main btn */
+  .btn { display:inline-block; padding:14px 36px; border-radius:50px; border:none; font-family:'Fredoka One',cursive; font-size:1.2rem; cursor:pointer; transition:all 0.2s; }
+  .btn-primary { background:linear-gradient(135deg,#4d96ff,#845ef7); color:white; box-shadow:0 4px 20px rgba(77,150,255,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(77,150,255,0.6); }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-secondary { background:rgba(255,255,255,0.1); color:white; border:2px solid rgba(255,255,255,0.2); font-size:0.92rem; padding:10px 24px; }
+  .btn-secondary:hover { background:rgba(255,255,255,0.2); }
+  /* HUD */
+  .hud { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:7px; }
+  .hud-box { flex:1; background:var(--card); border-radius:12px; padding:9px 5px; border:1px solid rgba(255,255,255,0.08); }
+  .hud-label { font-size:0.58rem; font-weight:700; color:var(--subtext); text-transform:uppercase; letter-spacing:0.08em; }
+  .hud-value { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .score-val { color:var(--accent2); }
+  .streak-val { color:var(--accent3); }
+  .timer-val { color:var(--accent1); }
+  .timer-bar-wrap { background:rgba(255,255,255,0.1); border-radius:8px; height:9px; margin-bottom:12px; overflow:hidden; }
+  .timer-bar { height:100%; border-radius:8px; background:linear-gradient(90deg,#6bcb77,#ffd93d); transition:width 1s linear, background 1s linear; }
+  .streak-banner { background:linear-gradient(135deg,#ffd93d,#ff922b); border-radius:11px; padding:8px 16px; font-family:'Fredoka One',cursive; font-size:0.95rem; color:#1a1a00; margin-bottom:10px; display:none; animation:pop 0.4s ease; }
+  /* Topic badge in game */
+  .q-topic { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--subtext); margin-bottom:4px; }
+  .q-progress { color:var(--subtext); font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+  .question-text { font-family:'Fredoka One',cursive; font-size:clamp(1.1rem,4vw,1.5rem); color:white; margin:6px 0 18px; line-height:1.4; min-height:60px; }
+  .answer-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .answer-btn { background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15); border-radius:14px; color:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; padding:14px 10px; cursor:pointer; transition:all 0.15s; line-height:1.4; }
+  .answer-btn:hover:not(:disabled) { background:rgba(77,150,255,0.25); border-color:var(--accent4); transform:scale(1.02); }
+  .answer-btn.correct { background:rgba(107,203,119,0.35); border-color:var(--accent3); animation:pop 0.3s ease; }
+  .answer-btn.wrong { background:rgba(255,107,107,0.35); border-color:var(--accent1); animation:shake 0.3s ease; }
+  .answer-btn:disabled { cursor:not-allowed; }
+  .did-you-know { background:rgba(77,150,255,0.12); border:1px solid rgba(77,150,255,0.3); border-radius:12px; padding:10px 14px; font-size:0.82rem; font-weight:600; color:#a8c8ff; margin-bottom:10px; display:none; text-align:left; }
+  .did-you-know span { font-weight:800; color:var(--accent4); }
+  @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .feedback-text { font-family:'Fredoka One',cursive; font-size:1.1rem; min-height:28px; }
+  .feedback-text.good { color:var(--accent3); }
+  .feedback-text.bad { color:var(--accent1); }
+  /* Results */
+  .results-emoji { font-size:3.5rem; margin-bottom:10px; display:block; animation:pop 0.5s ease; }
+  .results-score { font-family:'Fredoka One',cursive; font-size:2.6rem; color:var(--accent2); margin-bottom:4px; }
+  .results-sub { color:var(--subtext); font-size:0.92rem; margin-bottom:20px; }
+  .results-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-bottom:18px; }
+  .stat-box { background:rgba(255,255,255,0.05); border-radius:12px; padding:11px 5px; }
+  .stat-val { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .stat-lbl { font-size:0.63rem; color:var(--subtext); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+  .btn-row { display:flex; gap:9px; justify-content:center; flex-wrap:wrap; }
+  .confetti-piece { position:fixed; width:10px; height:10px; top:-10px; border-radius:2px; pointer-events:none; z-index:999; animation:confettiFall var(--fall) ease-in forwards; }
+  @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+  .section-label { color:var(--subtext); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="container">
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="title">🔬 Science Quest</div>
+    <div class="subtitle">Pick your topics and play!</div>
+    <div class="card">
+      <div class="section-label">Choose topics</div>
+      <div class="select-row">
+        <button class="sel-all-btn" onclick="selectAllTopics()">✅ All Topics</button>
+        <button class="sel-all-btn" onclick="selectNoneTopics()">✖ Clear</button>
+      </div>
+      <div class="topic-grid" id="topicGrid"></div>
+      <div class="section-label" style="margin-top:12px">Difficulty</div>
+      <div class="diff-row">
+        <button class="diff-btn easy" id="diff-easy" onclick="setDiff('easy')">🟢 Easy</button>
+        <button class="diff-btn medium selected" id="diff-medium" onclick="setDiff('medium')">🟡 Medium</button>
+        <button class="diff-btn hard" id="diff-hard" onclick="setDiff('hard')">🔴 Hard</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="startBtn" onclick="startGame()" disabled>Start Quest! 🚀</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-box"><div class="hud-label">Score</div><div class="hud-value score-val" id="scoreDisplay">0</div></div>
+      <div class="hud-box"><div class="hud-label">Streak 🔥</div><div class="hud-value streak-val" id="streakDisplay">0</div></div>
+      <div class="hud-box"><div class="hud-label">Time ⏱</div><div class="hud-value timer-val" id="timerDisplay">45</div></div>
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+    <div class="streak-banner" id="streakBanner"></div>
+    <div class="card">
+      <div class="q-topic" id="qTopic"></div>
+      <div class="q-progress" id="qProgress">Question 1 of 15</div>
+      <div class="question-text" id="questionText"></div>
+      <div class="answer-grid" id="answerGrid"></div>
+      <div class="did-you-know" id="didYouKnow"><span>💡 Did you know?</span> <span id="dykText"></span></div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="card">
+      <span class="results-emoji" id="resultsEmoji">🏆</span>
+      <div class="results-score" id="resultsScore">0</div>
+      <div class="results-sub" id="resultsSub">points scored!</div>
+      <div class="results-stats">
+        <div class="stat-box"><div class="stat-val" id="statCorrect" style="color:#6bcb77">0</div><div class="stat-lbl">Correct</div></div>
+        <div class="stat-box"><div class="stat-val" id="statWrong" style="color:#ff6b6b">0</div><div class="stat-lbl">Wrong</div></div>
+        <div class="stat-box"><div class="stat-val" id="statBest" style="color:#ffd93d">0</div><div class="stat-lbl">Best Streak</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="startGame()">Play Again 🔄</button>
+        <button class="btn btn-secondary" onclick="goHome()">Change Topics</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+// Stars
+const starsEl=document.getElementById('stars');
+for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*3+1;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;starsEl.appendChild(s);}
+
+const TOPICS = {
+  cells:    '🔬 Cells',
+  repro:    '🧬 Reproduction',
+  verts:    '🐟 Vertebrates',
+  photo:    '🌿 Photosynthesis',
+  food:     '🦁 Food Chains',
+  eco:      '🌍 Ecosystems',
+  dna:      '🧬 DNA',
+  var:      '📊 Variation',
+  states:   '💧 States',
+  metals:   '⚙️ Metals',
+  circuits: '⚡ Circuits',
+  energy:   '🔋 Energy',
+};
+
+// All questions with difficulty: 1=easy, 2=medium, 3=hard
+const ALL_Q = [
+  // CELLS
+  {t:'cells', d:1, q:"What shape are most animal cells?", a:"Roughly round/blob-shaped", w:["Square","Hexagonal","Star-shaped"], dyk:"Plant cells are usually more rectangular because of their rigid cell wall."},
+  {t:'cells', d:1, q:"What part of the cell controls what goes in and out?", a:"Cell membrane", w:["Cell wall","Nucleus","Cytoplasm"], dyk:"The cell membrane is flexible and found in both plant and animal cells."},
+  {t:'cells', d:1, q:"What is the jelly-like substance inside a cell called?", a:"Cytoplasm", w:["Nucleus","Vacuole","Plasma"], dyk:"Most chemical reactions in the cell happen in the cytoplasm."},
+  {t:'cells', d:2, q:"What do mitochondria do?", a:"Make energy for the cell", w:["Make protein","Control the cell","Store water"], dyk:"Cells that need lots of energy (like muscle cells) have more mitochondria."},
+  {t:'cells', d:2, q:"Which part of the cell controls all its activity?", a:"Nucleus", w:["Mitochondria","Cell membrane","Vacuole"], dyk:"The nucleus contains DNA — the instructions for everything the cell does."},
+  {t:'cells', d:2, q:"What do ribosomes do?", a:"Make proteins", w:["Make energy","Control what enters the cell","Store waste"], dyk:"Proteins are used to build and repair everything in your body."},
+  {t:'cells', d:2, q:"What is a tissue?", a:"A group of similar cells working together", w:["A single cell","A group of organs","A complete organism"], dyk:"Muscle tissue is made of muscle cells all working together to contract."},
+  {t:'cells', d:2, q:"What is an organ?", a:"A group of tissues working together", w:["A single cell","A group of organisms","One type of tissue"], dyk:"Your heart is an organ made of muscle tissue, nerve tissue and more."},
+  {t:'cells', d:3, q:"What is the correct order from smallest to largest?", a:"Organelle → Cell → Tissue → Organ → Organ system → Organism", w:["Cell → Organelle → Tissue → Organ","Organ → Tissue → Cell → Organelle","Tissue → Cell → Organ → Organism"], dyk:"You have about 37 trillion cells in your body!"},
+  {t:'cells', d:3, q:"What is the cell wall in plant cells made of?", a:"Cellulose", w:["Protein","DNA","Starch"], dyk:"Cellulose is a type of carbohydrate — it makes the cell wall rigid and strong."},
+  {t:'cells', d:3, q:"Which structures are found in plant cells but NOT animal cells?", a:"Cell wall, chloroplasts, large vacuole", w:["Nucleus, mitochondria, ribosomes","Cell membrane, cytoplasm, nucleus","Mitochondria, ribosomes, vacuole"], dyk:"Chloroplasts are where photosynthesis takes place — they contain green chlorophyll."},
+  {t:'cells', d:3, q:"What is an organ system?", a:"A group of organs working together for a major function", w:["A group of cells","A type of tissue","A single large organ"], dyk:"You have about 11 major organ systems, including the digestive and nervous systems."},
+
+  // REPRODUCTION
+  {t:'repro', d:1, q:"What are sperm and egg cells called?", a:"Gametes", w:["Zygotes","Embryos","Chromosomes"], dyk:"Gametes contain half the normal number of chromosomes — so when they join, the baby gets the right amount."},
+  {t:'repro', d:1, q:"What is the name of the process when a sperm joins an egg?", a:"Fertilisation", w:["Respiration","Reproduction","Germination"], dyk:"Fertilisation in humans usually happens in the fallopian tube."},
+  {t:'repro', d:2, q:"How is a sperm cell adapted to swim to the egg?", a:"It has a tail", w:["It is very large","It has chloroplasts","It has a cell wall"], dyk:"A sperm cell has lots of mitochondria to power its long swim to the egg."},
+  {t:'repro', d:2, q:"What is a zygote?", a:"A fertilised egg cell", w:["A sperm cell","A female gamete","An embryo after 8 weeks"], dyk:"A zygote contains DNA from both parents — it's the very first cell of a new organism."},
+  {t:'repro', d:2, q:"Which animals use external fertilisation?", a:"Fish and amphibians", w:["Mammals and birds","Reptiles and mammals","Birds and reptiles"], dyk:"External fertilisation happens in water — the sperm can swim to the eggs."},
+  {t:'repro', d:2, q:"What does the placenta do?", a:"Passes nutrients and oxygen from mother to baby", w:["Makes the baby's blood","Produces the baby's hormones","Keeps the baby warm"], dyk:"The placenta also removes waste products from the baby's blood."},
+  {t:'repro', d:3, q:"How is an egg cell different from most other cells?", a:"It is very large and contains nutrients for the embryo", w:["It has no nucleus","It has a tail to swim","It has extra mitochondria"], dyk:"The egg cell is the largest human cell — it's just about visible to the naked eye."},
+  {t:'repro', d:3, q:"What happens after fertilisation?", a:"The zygote divides and grows into an embryo", w:["The zygote stays the same size","The zygote splits into two gametes","The zygote travels to the stomach"], dyk:"By 8 weeks, the embryo is called a foetus and already has a heartbeat."},
+
+  // VERTEBRATES
+  {t:'verts', d:1, q:"What is a vertebrate?", a:"An animal with a backbone", w:["An animal without a backbone","A plant that produces seeds","An animal that lives in water"], dyk:"About 96% of all animal species are invertebrates — vertebrates are actually the minority!"},
+  {t:'verts', d:1, q:"Which vertebrate group breathes using gills?", a:"Fish", w:["Amphibians","Reptiles","Mammals"], dyk:"Some fish, like the lungfish, can also breathe air in emergencies."},
+  {t:'verts', d:2, q:"Which vertebrate group has feathers?", a:"Birds", w:["Reptiles","Mammals","Amphibians"], dyk:"Feathers help birds fly, stay warm, and attract mates."},
+  {t:'verts', d:2, q:"Which vertebrate group gives birth to live young and produces milk?", a:"Mammals", w:["Reptiles","Amphibians","Birds"], dyk:"Whales and dolphins are mammals — they breathe air and feed their young milk."},
+  {t:'verts', d:2, q:"What skin do reptiles have?", a:"Scaly skin", w:["Smooth skin","Feathers","Fur or hair"], dyk:"Reptile scales are made of keratin — the same material as your fingernails."},
+  {t:'verts', d:2, q:"Which two vertebrate groups use external fertilisation?", a:"Fish and amphibians", w:["Mammals and birds","Reptiles and fish","Birds and amphibians"], dyk:"Frogs lay thousands of eggs at once because many won't survive — external fertilisation is less reliable."},
+  {t:'verts', d:3, q:"What are the features of amphibians?", a:"Smooth skin, live on land and water, breathe with lungs, external fertilisation", w:["Scaly skin, lay hard eggs, internal fertilisation","Hair or fur, live young, internal fertilisation","Feathers, lay hard eggs, breathe with lungs"], dyk:"Amphibians must return to water to reproduce — their eggs have no shell to stop them drying out."},
+  {t:'verts', d:3, q:"What type of eggs do reptiles lay?", a:"Soft-shelled eggs on land", w:["Hard-shelled eggs in water","No eggs — live young","Soft eggs in water"], dyk:"Reptile eggs have a leathery shell that stops them drying out — unlike amphibian eggs."},
+
+  // PHOTOSYNTHESIS
+  {t:'photo', d:1, q:"What do plants use to make food?", a:"Sunlight", w:["Wind","Water alone","Soil minerals alone"], dyk:"Plants are the only organisms that can make their own food — they are called autotrophs."},
+  {t:'photo', d:1, q:"What colour chemical in leaves absorbs sunlight?", a:"Chlorophyll (green)", w:["Haemoglobin (red)","Melanin (brown)","Carotene (orange only)"], dyk:"Leaves look green because chlorophyll reflects green light and absorbs red and blue light."},
+  {t:'photo', d:2, q:"What are the products of photosynthesis?", a:"Glucose and oxygen", w:["Carbon dioxide and water","Glucose and carbon dioxide","Oxygen and water"], dyk:"The oxygen we breathe comes from plants — it's a byproduct of photosynthesis!"},
+  {t:'photo', d:2, q:"What are the reactants (ingredients) of photosynthesis?", a:"Carbon dioxide and water", w:["Glucose and oxygen","Sunlight and soil","Chlorophyll and water"], dyk:"Plants get CO₂ through tiny holes called stomata on the underside of leaves."},
+  {t:'photo', d:2, q:"Where in the leaf does photosynthesis mainly take place?", a:"In the chloroplasts", w:["In the cell wall","In the vacuole","In the nucleus"], dyk:"Chloroplasts contain chlorophyll — the green pigment that traps sunlight energy."},
+  {t:'photo', d:2, q:"What are stomata?", a:"Tiny holes on the underside of leaves", w:["Tubes that carry water up the stem","The green pigment in leaves","Root hairs that absorb minerals"], dyk:"Stomata can open and close — they close in dry conditions to stop the plant losing water."},
+  {t:'photo', d:3, q:"Complete the word equation: Carbon dioxide + Water → _____ + Oxygen", a:"Glucose", w:["Protein","Starch","Carbon"], dyk:"Plants convert some glucose into starch for long-term energy storage."},
+  {t:'photo', d:3, q:"Why are leaves broad and flat?", a:"To give a large surface area to absorb more light", w:["To make them easier to eat","To reduce water loss","To attract insects"], dyk:"Leaves also have a network of veins that deliver water from the roots."},
+
+  // FOOD CHAINS
+  {t:'food', d:1, q:"What does the arrow in a food chain represent?", a:"The direction energy flows", w:["Which animal is bigger","Who is the predator","The direction water flows"], dyk:"Energy is lost at each stage of a food chain — that's why food chains rarely have more than 5 levels."},
+  {t:'food', d:1, q:"What is a producer in a food chain?", a:"A plant that stores energy from the Sun", w:["An animal that eats plants","A top predator","A decomposer"], dyk:"All energy in a food chain originally comes from the Sun."},
+  {t:'food', d:2, q:"What is a primary consumer?", a:"An animal that eats plants", w:["An animal that eats other animals","A plant","A top predator"], dyk:"Primary consumers are always herbivores — animals that only eat plants."},
+  {t:'food', d:2, q:"What is a secondary consumer?", a:"An animal that eats primary consumers", w:["An animal that eats plants","A plant","A decomposer"], dyk:"Many secondary consumers are omnivores — they eat both plants and animals."},
+  {t:'food', d:2, q:"What is a food web?", a:"Multiple food chains joined together", w:["A single food chain","A diagram of one predator","A list of all producers"], dyk:"Real ecosystems have food webs, not just simple food chains — most animals eat more than one thing."},
+  {t:'food', d:3, q:"If all the plants in a food chain died, what would happen?", a:"All animals in the chain would eventually die too", w:["Only the primary consumers would die","Nothing — animals can make their own food","Only the top predators would die"], dyk:"This is why deforestation is so dangerous — removing plants collapses whole food webs."},
+  {t:'food', d:3, q:"What is a tertiary consumer?", a:"An animal that eats secondary consumers", w:["An animal that eats plants","An animal that eats primary consumers","A decomposer"], dyk:"Tertiary consumers are often apex predators — they have no natural predators themselves."},
+
+  // ECOSYSTEMS
+  {t:'eco', d:1, q:"What is an ecosystem?", a:"All living organisms in one area plus their environment", w:["All the plants in one area","A single food chain","All animals on Earth"], dyk:"Ecosystems can be as small as a pond or as large as the Amazon rainforest."},
+  {t:'eco', d:1, q:"What does interdependent mean?", a:"Organisms need each other to survive", w:["Organisms compete with each other","Organisms live separately","Organisms eat each other"], dyk:"Even predators and prey are interdependent — without prey, predators would die out."},
+  {t:'eco', d:2, q:"What gas do plants give out during photosynthesis?", a:"Oxygen", w:["Carbon dioxide","Nitrogen","Hydrogen"], dyk:"Phytoplankton in the oceans produce about 50% of all the oxygen on Earth."},
+  {t:'eco', d:2, q:"What gas do animals breathe out?", a:"Carbon dioxide", w:["Oxygen","Nitrogen","Hydrogen"], dyk:"Plants actually need this CO₂ for photosynthesis — a perfect natural cycle."},
+  {t:'eco', d:2, q:"Why would animals die if all plants disappeared?", a:"No oxygen to breathe and no food energy", w:["Animals would just eat soil","There would be too much rain","The temperature would drop"], dyk:"Plants also help regulate the climate by absorbing CO₂ — another reason they're vital."},
+  {t:'eco', d:3, q:"Why do almost all living things depend on plants?", a:"Plants capture the Sun's energy which passes to all other organisms", w:["Plants produce water","Plants make all the soil","Plants control the weather"], dyk:"Without photosynthesis, there would be almost no food energy available anywhere on Earth."},
+
+  // DNA
+  {t:'dna', d:1, q:"Where is DNA found in most cells?", a:"In the nucleus", w:["In the mitochondria","In the cell membrane","In the cytoplasm"], dyk:"There is actually a small amount of DNA in mitochondria too — a clue to their evolutionary origin."},
+  {t:'dna', d:1, q:"What is a gene?", a:"A short length of DNA that controls a characteristic", w:["A long strand of protein","A type of chromosome","A cell organelle"], dyk:"Humans have about 20,000 genes — but we're not sure exactly how many."},
+  {t:'dna', d:2, q:"How many chromosomes do humans have?", a:"46 (23 pairs)", w:["23","48","44"], dyk:"Fruit flies only have 8 chromosomes — having more doesn't mean you're more complex."},
+  {t:'dna', d:2, q:"What is heredity?", a:"When genes are passed from parents to children", w:["When cells divide","When organisms reproduce asexually","When DNA mutates"], dyk:"You inherit half your genes from your mum and half from your dad."},
+  {t:'dna', d:2, q:"Who first built a model of the DNA double helix?", a:"Crick and Watson", w:["Darwin and Wallace","Newton and Einstein","Franklin and Wilkins"], dyk:"Rosalind Franklin's X-ray images of DNA were crucial to Crick and Watson's discovery."},
+  {t:'dna', d:3, q:"What is the shape of a DNA molecule?", a:"A double helix — two chains twisted together", w:["A single straight strand","A sphere","A flat ring"], dyk:"If you unravelled all the DNA from one human cell, it would be about 2 metres long!"},
+  {t:'dna', d:3, q:"What does DNA contain that makes it the instruction manual for life?", a:"Chemical instructions for how to build and run an organism", w:["Energy for the cell","The cell's food supply","Instructions for making hormones only"], dyk:"DNA is the same in every cell of your body — but different genes are switched on in different cells."},
+
+  // VARIATION
+  {t:'var', d:1, q:"What is variation?", a:"The differences between living things", w:["The similarities between organisms","The way organisms reproduce","The process of evolution"], dyk:"Even identical twins have some variation — caused by their different environments and experiences."},
+  {t:'var', d:2, q:"What is continuous variation?", a:"A feature that can be any value in a range", w:["A feature with only a few set values","A feature that never changes","A feature caused only by genes"], dyk:"Height is continuous — humans can be anywhere from about 50cm to 272cm (the tallest ever recorded)."},
+  {t:'var', d:2, q:"What is discontinuous variation?", a:"A feature that can only take certain values", w:["A feature that changes gradually","A feature caused by environment","Any feature in plants"], dyk:"Blood groups are discontinuous — you can only be A, B, AB or O. There's nothing in between."},
+  {t:'var', d:2, q:"Is blood group an example of continuous or discontinuous variation?", a:"Discontinuous — only 4 possible groups", w:["Continuous — it changes with age","Continuous — many possible values","Discontinuous — caused by environment"], dyk:"Your blood group is entirely determined by your genes — the environment has no effect."},
+  {t:'var', d:3, q:"What causes variation within the same species?", a:"Both genes and the environment", w:["Genes only","Environment only","Neither — organisms are identical"], dyk:"Hair colour is mainly genetic, but sun exposure can lighten it — showing how environment interacts with genes."},
+  {t:'var', d:3, q:"What type of graph is used to show continuous variation?", a:"A histogram with no gaps between bars", w:["A bar chart with gaps","A pie chart","A scatter graph"], dyk:"The histogram for height in a large population makes a bell-shaped curve called a normal distribution."},
+
+  // STATES
+  {t:'states', d:1, q:"What are the 3 states of matter?", a:"Solid, liquid and gas", w:["Solid, plasma and gas","Liquid, vapour and solid","Fluid, solid and air"], dyk:"There is actually a fourth state of matter called plasma — it's found in stars and lightning."},
+  {t:'states', d:1, q:"What is it called when a solid turns into a liquid?", a:"Melting", w:["Freezing","Evaporation","Condensation"], dyk:"Ice melts at exactly 0°C — this is called the melting point of water."},
+  {t:'states', d:1, q:"What is it called when a liquid turns into a gas?", a:"Evaporation or boiling", w:["Melting","Condensation","Freezing"], dyk:"Evaporation happens at the surface of a liquid even below boiling point — that's how puddles dry up."},
+  {t:'states', d:2, q:"What is condensation?", a:"When a gas cools and turns into a liquid", w:["When a liquid turns into a gas","When a solid turns into a liquid","When a gas turns into a solid"], dyk:"Condensation on a cold window is water vapour from the air turning back into liquid water."},
+  {t:'states', d:2, q:"Describe the particles in a solid.", a:"Closely packed, fixed arrangement, vibrate in place", w:["Far apart, moving fast in all directions","Close together, can move around each other","Loosely packed, moving freely"], dyk:"Even in a solid, particles are always vibrating — heating them makes them vibrate faster until they melt."},
+  {t:'states', d:2, q:"At what temperature does water boil?", a:"100°C", w:["0°C","50°C","200°C"], dyk:"Water boils at a lower temperature at high altitude because air pressure is lower."},
+  {t:'states', d:3, q:"What is sublimation?", a:"When a solid turns directly into a gas", w:["When a gas turns into a solid","When a liquid turns into a solid","When a solid turns into a liquid"], dyk:"Dry ice (solid CO₂) sublimates at room temperature — it goes straight to gas without melting."},
+  {t:'states', d:3, q:"Why can gases be compressed but solids cannot?", a:"Gas particles are far apart with space between them", w:["Gas particles are heavier","Solid particles are liquid-like","Gas particles move slower"], dyk:"This is why air can be squashed into a tyre — there's lots of empty space between the gas particles."},
+
+  // METALS
+  {t:'metals', d:1, q:"Give one property of metals.", a:"Good conductor of heat and electricity", w:["Brittle and dull","Does not conduct electricity","Always magnetic"], dyk:"Not all metals are magnetic — only iron, nickel and cobalt are magnetic."},
+  {t:'metals', d:1, q:"What does conductor mean?", a:"A material that lets heat or electricity pass through easily", w:["A material that stops electricity","A material that is transparent","A material that is very hard"], dyk:"Copper is one of the best electrical conductors — that's why it's used in most electrical wiring."},
+  {t:'metals', d:2, q:"What does malleable mean?", a:"Can be shaped or bent without breaking", w:["Conducts electricity","Is magnetic","Dissolves in water"], dyk:"Gold is extremely malleable — it can be beaten into sheets so thin light passes through them."},
+  {t:'metals', d:2, q:"What is an insulator?", a:"A material that does not allow electricity or heat to pass through", w:["A material that conducts electricity","A magnetic material","A very hard material"], dyk:"Plastic and rubber are good insulators — that's why electrical wires are coated in them."},
+  {t:'metals', d:2, q:"Why is copper used in electrical wiring?", a:"It is an excellent conductor of electricity and is flexible", w:["It is magnetic","It is very cheap","It is the hardest metal"], dyk:"Copper wiring in homes is coated with plastic insulation to stop electric shocks."},
+  {t:'metals', d:3, q:"What is an alloy?", a:"A mixture of two or more metals", w:["A pure metal","A non-metal material","A type of chemical reaction"], dyk:"Steel (iron + carbon) is stronger than pure iron — alloys are often better than pure metals."},
+  {t:'metals', d:3, q:"What are non-metals like compared to metals?", a:"Dull, brittle, poor conductors", w:["Shiny, strong, good conductors","Flexible, magnetic, hard","Light, bendy, heat-resistant"], dyk:"Graphite is a non-metal that can conduct electricity — it's used in pencil leads and batteries."},
+
+  // CIRCUITS
+  {t:'circuits', d:1, q:"What is electric current?", a:"The flow of electrical charge around a circuit", w:["The push behind the current","The resistance in a wire","The power of the battery"], dyk:"Electric current flows from negative to positive terminal, but by convention we say it flows positive to negative."},
+  {t:'circuits', d:1, q:"What unit is current measured in?", a:"Amps (A)", w:["Volts (V)","Ohms (Ω)","Watts (W)"], dyk:"Even tiny currents of a few milliamps can be dangerous to the human body."},
+  {t:'circuits', d:2, q:"What is the difference between a series and parallel circuit?", a:"Series: one loop. Parallel: separate branches.", w:["Series has more bulbs","Parallel uses less electricity","Series is always brighter"], dyk:"Your home uses parallel circuits so that when one light goes off, the others stay on."},
+  {t:'circuits', d:2, q:"What happens if one bulb breaks in a series circuit?", a:"All bulbs go out", w:["Only that bulb goes out","The other bulbs get brighter","Nothing changes"], dyk:"Old Christmas lights used series circuits — if one bulb failed, the whole string went out!"},
+  {t:'circuits', d:2, q:"What does a voltmeter measure?", a:"Voltage in volts", w:["Current in amps","Resistance in ohms","Power in watts"], dyk:"A voltmeter is connected in parallel across a component to measure the voltage across it."},
+  {t:'circuits', d:2, q:"What does an ammeter measure?", a:"Current in amps", w:["Voltage in volts","Resistance in ohms","Power in watts"], dyk:"An ammeter is connected in series — the current must flow through it to be measured."},
+  {t:'circuits', d:3, q:"What is voltage?", a:"The push that drives current around a circuit", w:["The flow of electrons","How much a component resists current","The amount of energy stored"], dyk:"A higher voltage means a bigger push — it drives more current through the same resistance."},
+  {t:'circuits', d:3, q:"What is resistance?", a:"How much a component opposes the flow of current", w:["The speed of the electrons","The power of the battery","The amount of charge stored"], dyk:"Resistance is measured in ohms (Ω) — named after German physicist Georg Ohm."},
+
+  // ENERGY
+  {t:'energy', d:1, q:"Name one type of energy store.", a:"Chemical, kinetic, thermal, gravitational potential, elastic potential, or nuclear", w:["Magnetic","Liquid","Heavy"], dyk:"Energy stores are sometimes called energy 'types' — but scientists prefer to call them stores."},
+  {t:'energy', d:1, q:"What is kinetic energy?", a:"The energy an object has because it is moving", w:["Energy stored in food","Energy stored in a spring","Energy stored as heat"], dyk:"The faster something moves and the heavier it is, the more kinetic energy it has."},
+  {t:'energy', d:2, q:"What is gravitational potential energy?", a:"Energy stored because of height above the ground", w:["Energy of movement","Energy stored in chemicals","Energy stored as heat"], dyk:"A roller coaster uses gravitational potential energy — it builds up at the top and converts to kinetic on the way down."},
+  {t:'energy', d:2, q:"What is the law of conservation of energy?", a:"Energy cannot be created or destroyed — only transferred", w:["Energy is always lost as heat","Energy increases over time","Energy can be created from nothing"], dyk:"This is one of the most fundamental laws in all of science — it has never been broken."},
+  {t:'energy', d:2, q:"Give two examples of renewable energy resources.", a:"Solar, wind, tidal, hydroelectric, geothermal", w:["Coal and oil","Gas and nuclear","Coal and wind"], dyk:"The UK now gets over 40% of its electricity from renewable sources."},
+  {t:'energy', d:2, q:"Why are fossil fuels non-renewable?", a:"They take millions of years to form", w:["They run out in one year","They can't be burned","They produce no energy"], dyk:"Coal, oil and gas formed from the remains of plants and animals that lived 300 million years ago."},
+  {t:'energy', d:3, q:"What energy transfer happens in a torch?", a:"Chemical (battery) → electrical → light + thermal", w:["Kinetic → electrical → light","Thermal → chemical → light","Nuclear → light → thermal"], dyk:"No energy transfer is 100% efficient — some energy is always lost as heat."},
+  {t:'energy', d:3, q:"What is elastic potential energy?", a:"Energy stored in a stretched or compressed object", w:["Energy of a moving object","Energy stored as heat","Energy stored in food"], dyk:"A stretched bow stores elastic potential energy — releasing it converts to kinetic energy of the arrow."},
+];
+
+// State
+const selectedTopics = new Set();
+let difficulty = 'medium';
+const TOTAL_Q = 15, TIME_PER_Q = 45;
+let score, streak, bestStreak, numCorrect, numWrong, timeLeft, timerInterval, qNumber, answered, gamePool, usedIdx;
+
+// Build topic grid
+const topicGrid = document.getElementById('topicGrid');
+Object.entries(TOPICS).forEach(([key, label]) => {
+  const btn = document.createElement('button');
+  btn.className = 'topic-btn';
+  btn.textContent = label;
+  btn.onclick = () => toggleTopic(key, btn);
+  topicGrid.appendChild(btn);
+});
+
+function toggleTopic(key, btn) {
+  if (selectedTopics.has(key)) { selectedTopics.delete(key); btn.classList.remove('selected'); }
+  else { selectedTopics.add(key); btn.classList.add('selected'); }
+  document.getElementById('startBtn').disabled = selectedTopics.size === 0;
+}
+function selectAllTopics() {
+  document.querySelectorAll('.topic-btn').forEach((btn, i) => { selectedTopics.add(Object.keys(TOPICS)[i]); btn.classList.add('selected'); });
+  document.getElementById('startBtn').disabled = false;
+}
+function selectNoneTopics() {
+  document.querySelectorAll('.topic-btn').forEach(btn => btn.classList.remove('selected'));
+  selectedTopics.clear();
+  document.getElementById('startBtn').disabled = true;
+}
+function setDiff(d) {
+  difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('diff-' + d).classList.add('selected');
+}
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+function startGame() {
+  score = 0; streak = 0; bestStreak = 0; numCorrect = 0; numWrong = 0; qNumber = 0;
+  const diffMap = { easy: 1, medium: 2, hard: 3 };
+  const dLevel = diffMap[difficulty];
+  // Filter questions by selected topics and difficulty
+  let pool = ALL_Q.filter(q => selectedTopics.has(q.t) && q.d <= dLevel);
+  if (pool.length < 5) pool = ALL_Q.filter(q => selectedTopics.has(q.t));
+  // Shuffle
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  gamePool = pool;
+  usedIdx = 0;
+  showScreen('screen-game');
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (qNumber >= TOTAL_Q) { endGame(); return; }
+  qNumber++;
+  answered = false;
+  document.getElementById('feedbackText').textContent = '';
+  document.getElementById('feedbackText').className = 'feedback-text';
+  document.getElementById('streakBanner').style.display = 'none';
+  document.getElementById('didYouKnow').style.display = 'none';
+  document.getElementById('qProgress').textContent = `Question ${qNumber} of ${TOTAL_Q}`;
+
+  const q = gamePool[usedIdx % gamePool.length];
+  usedIdx++;
+  document.getElementById('qTopic').textContent = TOPICS[q.t] || '';
+  document.getElementById('questionText').textContent = q.q;
+
+  // Build 4 options
+  const options = [q.a, ...q.w].sort(() => Math.random() - 0.5);
+  const grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt, q.a, btn, q.dyk);
+    grid.appendChild(btn);
+  });
+
+  // Store correct for time-up
+  grid.dataset.correct = q.a;
+  grid.dataset.dyk = q.dyk || '';
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = TIME_PER_Q;
+  document.getElementById('timerDisplay').textContent = timeLeft;
+  updateTimerBar();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timerDisplay').textContent = timeLeft;
+    updateTimerBar();
+    if (timeLeft <= 0) { clearInterval(timerInterval); if (!answered) timeUp(); }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = (timeLeft / TIME_PER_Q) * 100;
+  const bar = document.getElementById('timerBar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 60 ? 'linear-gradient(90deg,#6bcb77,#ffd93d)' : pct > 30 ? 'linear-gradient(90deg,#ffd93d,#ff922b)' : 'linear-gradient(90deg,#ff922b,#ff6b6b)';
+}
+
+function checkAnswer(chosen, correct, btn, dyk) {
+  if (answered) return;
+  answered = true; clearInterval(timerInterval);
+  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    streak++; if (streak > bestStreak) bestStreak = streak; numCorrect++;
+    const pts = 10 + (streak >= 3 ? 5 : 0) + Math.floor(timeLeft / 5);
+    score += pts; updateHUD();
+    if (streak >= 3) { const banner = document.getElementById('streakBanner'); banner.textContent = `🔥 ${streak} in a row! +${pts} points!`; banner.style.display = 'block'; }
+    const msgs = ['Brilliant! ⭐', 'Nailed it! 💥', 'Yes! 🎉', 'Amazing! 🚀', 'Superstar! ✨', 'Smashed it! 💪'];
+    setFeedback(msgs[Math.floor(Math.random() * msgs.length)], 'good');
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.answer-btn').forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+    streak = 0; numWrong++; updateHUD();
+    setFeedback(`The answer was: ${correct}`, 'bad');
+  }
+  if (dyk) { document.getElementById('dykText').textContent = dyk; document.getElementById('didYouKnow').style.display = 'block'; }
+  setTimeout(nextQuestion, 2200);
+}
+
+function timeUp() {
+  answered = true;
+  document.querySelectorAll('.answer-btn').forEach(b => { b.disabled = true; if (b.textContent === document.getElementById('answerGrid').dataset.correct) b.classList.add('correct'); });
+  streak = 0; numWrong++; updateHUD();
+  setFeedback("⏰ Time's up!", 'bad');
+  const dyk = document.getElementById('answerGrid').dataset.dyk;
+  if (dyk) { document.getElementById('dykText').textContent = dyk; document.getElementById('didYouKnow').style.display = 'block'; }
+  setTimeout(nextQuestion, 2200);
+}
+
+function setFeedback(msg, cls) { const el = document.getElementById('feedbackText'); el.textContent = msg; el.className = 'feedback-text ' + cls; }
+function updateHUD() { document.getElementById('scoreDisplay').textContent = score; document.getElementById('streakDisplay').textContent = streak; }
+
+function endGame() {
+  clearInterval(timerInterval);
+  const pct = Math.round((numCorrect / TOTAL_Q) * 100);
+  const emojis = pct >= 90 ? '🏆' : pct >= 70 ? '🌟' : pct >= 50 ? '💪' : '🎮';
+  const subs = pct >= 90 ? 'Absolutely incredible, Xav!' : pct >= 70 ? 'Really great work!' : pct >= 50 ? 'Good effort — keep going!' : 'Practice makes perfect!';
+  document.getElementById('resultsEmoji').textContent = emojis;
+  document.getElementById('resultsScore').textContent = score;
+  document.getElementById('resultsSub').textContent = subs;
+  document.getElementById('statCorrect').textContent = numCorrect;
+  document.getElementById('statWrong').textContent = numWrong;
+  document.getElementById('statBest').textContent = bestStreak;
+  if (pct >= 70) launchConfetti();
+  showScreen('screen-results');
+}
+
+function goHome() { clearInterval(timerInterval); showScreen('screen-start'); }
+
+function launchConfetti() {
+  const colours = ['#ffd93d', '#ff6b6b', '#6bcb77', '#4d96ff', '#845ef7', '#ff922b'];
+  for (let i = 0; i < 70; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div'); p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;background:${colours[Math.floor(Math.random()*colours.length)]};--fall:${1.5+Math.random()*2}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(p); setTimeout(() => p.remove(), 4000);
+    }, i * 35);
+  }
+}
+</script>
+</body>
+</html>
