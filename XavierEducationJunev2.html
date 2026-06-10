@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xav's Learning Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f0c29;
+    --card: #1a1a3e;
+    --text: #ffffff;
+    --subtext: #a0a0c0;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Nunito',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding-bottom:40px;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* Stars */
+  .stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .star { position:absolute; background:white; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; opacity:0; }
+  @keyframes twinkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:1;transform:scale(1)} }
+
+  /* Header */
+  header {
+    position:relative; z-index:1;
+    text-align:center;
+    padding:36px 20px 24px;
+  }
+  .avatar { font-size:4rem; display:block; margin-bottom:8px; animation:bounce 2s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  h1 {
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(2rem,8vw,3.2rem);
+    background:linear-gradient(135deg,#ffd93d,#ff6b6b,#4d96ff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-bottom:6px;
+  }
+  .tagline { color:var(--subtext); font-size:0.95rem; font-weight:600; }
+
+  /* Main */
+  main {
+    position:relative; z-index:1;
+    max-width:640px;
+    margin:0 auto;
+    padding:0 16px;
+  }
+
+  /* Section heading */
+  .section-heading {
+    font-family:'Fredoka One',cursive;
+    font-size:1rem;
+    color:var(--subtext);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin:28px 0 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-heading::after {
+    content:'';
+    flex:1;
+    height:1px;
+    background:rgba(255,255,255,0.1);
+  }
+
+  /* Tool cards */
+  .tools-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .tools-grid.single { grid-template-columns:1fr; }
+
+  .tool-card {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--card);
+    border-radius:18px;
+    padding:22px 14px;
+    text-decoration:none;
+    color:white;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 6px 24px rgba(0,0,0,0.3);
+    transition:all 0.2s;
+    cursor:pointer;
+    border-top:4px solid;
+    text-align:center;
+  }
+  .tool-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(0,0,0,0.5); }
+  .tool-card:active { transform:translateY(-1px); }
+
+  .tool-emoji { font-size:2.2rem; }
+  .tool-name { font-family:'Fredoka One',cursive; font-size:1.05rem; line-height:1.2; }
+  .tool-desc { font-size:0.72rem; font-weight:600; color:var(--subtext); line-height:1.4; }
+
+  /* Colour themes per card */
+  .c-yellow  { border-top-color:#ffd93d; }
+  .c-blue    { border-top-color:#4d96ff; }
+  .c-green   { border-top-color:#6bcb77; }
+  .c-red     { border-top-color:#ff6b6b; }
+  .c-purple  { border-top-color:#845ef7; }
+  .c-orange  { border-top-color:#ff922b; }
+  .c-teal    { border-top-color:#1abc9c; }
+  .c-pink    { border-top-color:#e91e8c; }
+
+  /* Footer */
+  footer {
+    position:relative; z-index:1;
+    text-align:center;
+    margin-top:36px;
+    color:var(--subtext);
+    font-size:0.78rem;
+    font-weight:600;
+    padding:0 16px;
+  }
+  footer span { color:#ffd93d; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<header>
+  <span class="avatar">🚀</span>
+  <h1>Xav's Learning Hub</h1>
+  <p class="tagline">All your revision tools in one place</p>
+</header>
+
+<main>
+
+  <div class="section-heading">🔢 Maths</div>
+  <div class="tools-grid">
+    <a class="tool-card c-yellow" href="XavMathJune.html">
+      <span class="tool-emoji">⚡</span>
+      <span class="tool-name">Maths Quest</span>
+      <span class="tool-desc">Times tables, division, number bonds, subtraction & angles</span>
+    </a>
+    <a class="tool-card c-blue" href="xav-times-tables.html">
+      <span class="tool-emoji">✖️</span>
+      <span class="tool-name">Times Tables</span>
+      <span class="tool-desc">Pick or type the answer — all 12 tables</span>
+    </a>
+  </div>
+
+  <div class="section-heading">🔬 Science</div>
+  <div class="tools-grid">
+    <a class="tool-card c-green" href="xav-science-quiz.html">
+      <span class="tool-emoji">🔬</span>
+      <span class="tool-name">Science Quest</span>
+      <span class="tool-desc">Gamified quiz — pick from 4 answers, all 12 topics</span>
+    </a>
+    <a class="tool-card c-teal" href="science_flashcards.html">
+      <span class="tool-emoji">🃏</span>
+      <span class="tool-name">Science Flashcards</span>
+      <span class="tool-desc">Say the answer — Got It / Not Yet</span>
+    </a>
+  </div>
+  <div class="tools-grid" style="margin-top:12px">
+    <a class="tool-card c-purple" href="science_revision.html">
+      <span class="tool-emoji">📖</span>
+      <span class="tool-name">Science Revision</span>
+      <span class="tool-desc">Fill in the blanks, brain dumps & glossary</span>
+    </a>
+  </div>
+
+  <div class="section-heading">📚 English & Reading</div>
+  <div class="tools-grid">
+    <a class="tool-card c-orange" href="animal_farm_quiz.html">
+      <span class="tool-emoji">🐷</span>
+      <span class="tool-name">Animal Farm</span>
+      <span class="tool-desc">Reading comprehension quiz</span>
+    </a>
+    <a class="tool-card c-red" href="why_the_whale_came.html">
+      <span class="tool-emoji">🐋</span>
+      <span class="tool-name">Why the Whale Came</span>
+      <span class="tool-desc">Reading comprehension quiz</span>
+    </a>
+  </div>
+
+  <div class="section-heading">🌍 Geography & History</div>
+  <div class="tools-grid">
+    <a class="tool-card c-teal" href="xav-geography-climate-quest.html">
+      <span class="tool-emoji">🌤️</span>
+      <span class="tool-name">Climate Quest</span>
+      <span class="tool-desc">Geography gamified quiz</span>
+    </a>
+    <a class="tool-card c-orange" href="islamic_empire_quiz.html">
+      <span class="tool-emoji">🕌</span>
+      <span class="tool-name">Islamic Empire</span>
+      <span class="tool-desc">History quiz & worksheet</span>
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  Made with ❤️ for <span>Xav</span> — keep smashing it! 🌟
+</footer>
+
+<script>
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 3 + 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;
+    starsEl.appendChild(s);
+  }
+</script>
+</body>
+</html>
