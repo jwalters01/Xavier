@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xav's Geography Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+  :root {
+    --bg:#0f1f0c; --card:#1a2e1a; --accent1:#ff6b6b; --accent2:#ffd93d;
+    --accent3:#6bcb77; --accent4:#4dcc88; --text:#ffffff; --subtext:#90b090;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow-x:hidden; position:relative; }
+  .stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .star { position:absolute; background:white; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; opacity:0; }
+  @keyframes twinkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:1;transform:scale(1)} }
+  .container { position:relative; z-index:1; width:min(560px,96vw); text-align:center; padding:16px 0; }
+  .screen { display:none; }
+  .screen.active { display:block; animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .title { font-family:'Fredoka One',cursive; font-size:clamp(2rem,8vw,3.5rem); background:linear-gradient(135deg,#ffd93d,#4dcc88,#6bcb77); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; margin-bottom:6px; }
+  .subtitle { color:var(--subtext); font-size:0.95rem; font-weight:600; margin-bottom:18px; }
+  .card { background:var(--card); border-radius:18px; padding:22px 18px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .topic-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+  .topic-btn { background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.12); border-radius:12px; color:white; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.72rem; padding:10px 6px; cursor:pointer; transition:all 0.2s; line-height:1.3; }
+  .topic-btn:hover { background:rgba(77,204,136,0.25); border-color:var(--accent4); }
+  .topic-btn.selected { background:var(--accent4); border-color:var(--accent4); box-shadow:0 0 12px rgba(77,204,136,0.5); color:#001a00; }
+  .select-row { display:flex; gap:8px; margin-bottom:12px; }
+  .sel-all-btn { flex:1; padding:8px; border-radius:9px; border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s; }
+  .sel-all-btn:hover { background:rgba(255,255,255,0.12); }
+  .diff-row { display:flex; gap:8px; margin-bottom:14px; }
+  .diff-btn { flex:1; padding:9px; border-radius:10px; border:2px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:var(--subtext); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s; }
+  .diff-btn.selected { color:white; }
+  .diff-btn.easy.selected { background:#2ecc71; border-color:#2ecc71; }
+  .diff-btn.medium.selected { background:#f39c12; border-color:#f39c12; }
+  .diff-btn.hard.selected { background:#e74c3c; border-color:#e74c3c; }
+  .btn { display:inline-block; padding:14px 36px; border-radius:50px; border:none; font-family:'Fredoka One',cursive; font-size:1.2rem; cursor:pointer; transition:all 0.2s; }
+  .btn-primary { background:linear-gradient(135deg,#4dcc88,#2a9d5c); color:white; box-shadow:0 4px 20px rgba(77,204,136,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(77,204,136,0.6); }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-secondary { background:rgba(255,255,255,0.1); color:white; border:2px solid rgba(255,255,255,0.2); font-size:0.92rem; padding:10px 24px; }
+  .btn-secondary:hover { background:rgba(255,255,255,0.2); }
+  .hud { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:7px; }
+  .hud-box { flex:1; background:var(--card); border-radius:12px; padding:9px 5px; border:1px solid rgba(255,255,255,0.08); }
+  .hud-label { font-size:0.58rem; font-weight:700; color:var(--subtext); text-transform:uppercase; letter-spacing:0.08em; }
+  .hud-value { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .score-val { color:var(--accent2); }
+  .streak-val { color:var(--accent3); }
+  .timer-val { color:var(--accent1); }
+  .timer-bar-wrap { background:rgba(255,255,255,0.1); border-radius:8px; height:9px; margin-bottom:12px; overflow:hidden; }
+  .timer-bar { height:100%; border-radius:8px; background:linear-gradient(90deg,#6bcb77,#ffd93d); transition:width 1s linear, background 1s linear; }
+  .streak-banner { background:linear-gradient(135deg,#ffd93d,#ff922b); border-radius:11px; padding:8px 16px; font-family:'Fredoka One',cursive; font-size:0.95rem; color:#1a1a00; margin-bottom:10px; display:none; animation:pop 0.4s ease; }
+  .q-topic { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--subtext); margin-bottom:4px; }
+  .q-progress { color:var(--subtext); font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+  .question-text { font-family:'Fredoka One',cursive; font-size:clamp(1.1rem,4vw,1.5rem); color:white; margin:6px 0 18px; line-height:1.4; min-height:60px; }
+  .answer-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .answer-btn { background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15); border-radius:14px; color:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; padding:14px 10px; cursor:pointer; transition:all 0.15s; line-height:1.4; }
+  .answer-btn:hover:not(:disabled) { background:rgba(77,204,136,0.25); border-color:var(--accent4); transform:scale(1.02); }
+  .answer-btn.correct { background:rgba(107,203,119,0.35); border-color:var(--accent3); animation:pop 0.3s ease; }
+  .answer-btn.wrong { background:rgba(255,107,107,0.35); border-color:var(--accent1); animation:shake 0.3s ease; }
+  .answer-btn:disabled { cursor:not-allowed; }
+  .did-you-know { background:rgba(77,204,136,0.12); border:1px solid rgba(77,204,136,0.3); border-radius:12px; padding:10px 14px; font-size:0.82rem; font-weight:600; color:#a8ffc8; margin-bottom:10px; display:none; text-align:left; }
+  .did-you-know span { font-weight:800; color:var(--accent4); }
+  @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .feedback-text { font-family:'Fredoka One',cursive; font-size:1.1rem; min-height:28px; }
+  .feedback-text.good { color:var(--accent3); }
+  .feedback-text.bad { color:var(--accent1); }
+  .results-emoji { font-size:3.5rem; margin-bottom:10px; display:block; animation:pop 0.5s ease; }
+  .results-score { font-family:'Fredoka One',cursive; font-size:2.6rem; color:var(--accent2); margin-bottom:4px; }
+  .results-sub { color:var(--subtext); font-size:0.92rem; margin-bottom:20px; }
+  .results-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-bottom:18px; }
+  .stat-box { background:rgba(255,255,255,0.05); border-radius:12px; padding:11px 5px; }
+  .stat-val { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .stat-lbl { font-size:0.63rem; color:var(--subtext); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+  .btn-row { display:flex; gap:9px; justify-content:center; flex-wrap:wrap; }
+  .confetti-piece { position:fixed; width:10px; height:10px; top:-10px; border-radius:2px; pointer-events:none; z-index:999; animation:confettiFall var(--fall) ease-in forwards; }
+  @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+  .section-label { color:var(--subtext); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="container">
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="title">🌍 Geography Quest</div>
+    <div class="subtitle">Pick your topics and play!</div>
+    <div class="card">
+      <div class="section-label">Choose topics</div>
+      <div class="select-row">
+        <button class="sel-all-btn" onclick="selectAllTopics()">✅ All Topics</button>
+        <button class="sel-all-btn" onclick="selectNoneTopics()">✖ Clear</button>
+      </div>
+      <div class="topic-grid" id="topicGrid"></div>
+      <div class="section-label" style="margin-top:12px">Difficulty</div>
+      <div class="diff-row">
+        <button class="diff-btn easy" id="diff-easy" onclick="setDiff('easy')">🟢 Easy</button>
+        <button class="diff-btn medium selected" id="diff-medium" onclick="setDiff('medium')">🟡 Medium</button>
+        <button class="diff-btn hard" id="diff-hard" onclick="setDiff('hard')">🔴 Hard</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="startBtn" onclick="startGame()" disabled>Start Quest! 🚀</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-box"><div class="hud-label">Score</div><div class="hud-value score-val" id="scoreDisplay">0</div></div>
+      <div class="hud-box"><div class="hud-label">Streak 🔥</div><div class="hud-value streak-val" id="streakDisplay">0</div></div>
+      <div class="hud-box"><div class="hud-label">Time ⏱</div><div class="hud-value timer-val" id="timerDisplay">45</div></div>
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+    <div class="streak-banner" id="streakBanner"></div>
+    <div class="card">
+      <div class="q-topic" id="qTopic"></div>
+      <div class="q-progress" id="qProgress">Question 1 of 15</div>
+      <div class="question-text" id="questionText"></div>
+      <div class="answer-grid" id="answerGrid"></div>
+      <div class="did-you-know" id="didYouKnow"><span>🌎 Did you know?</span> <span id="dykText"></span></div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="card">
+      <span class="results-emoji" id="resultsEmoji">🏆</span>
+      <div class="results-score" id="resultsScore">0</div>
+      <div class="results-sub" id="resultsSub">points scored!</div>
+      <div class="results-stats">
+        <div class="stat-box"><div class="stat-val" id="statCorrect" style="color:#6bcb77">0</div><div class="stat-lbl">Correct</div></div>
+        <div class="stat-box"><div class="stat-val" id="statWrong" style="color:#ff6b6b">0</div><div class="stat-lbl">Wrong</div></div>
+        <div class="stat-box"><div class="stat-val" id="statBest" style="color:#ffd93d">0</div><div class="stat-lbl">Best Streak</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="startGame()">Play Again 🔄</button>
+        <button class="btn btn-secondary" onclick="goHome()">Change Topics</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+const starsEl=document.getElementById('stars');
+for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*3+1;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;starsEl.appendChild(s);}
+
+const TOPICS = {
+  weather:    '🌤 Weather & Climate',
+  solar:      '☀️ Solar & Atmosphere',
+  greenhouse: '🌡 Greenhouse Effect',
+  iceage:     '🧊 Ice Ages',
+  natural:    '🌋 Natural Causes',
+  human:      '🏭 Human Causes',
+  effects:    '🌊 Effects of Change',
+  responses:  '♻️ Responses',
+};
+
+const ALL_Q = [
+  // WEATHER & CLIMATE
+  {t:'weather', d:1, q:"What is weather?", a:"The day-to-day conditions of the atmosphere", w:["The average conditions over many years","The temperature of the sea","How much rain falls each year"], dyk:"Weather can change hour by hour — climate changes over decades."},
+  {t:'weather', d:1, q:"What is climate?", a:"The average weather in a place over a long period of time", w:["The day-to-day conditions of the atmosphere","The amount of rainfall in a year","The temperature on a single day"], dyk:"Scientists usually measure climate averages over 30-year periods."},
+  {t:'weather', d:1, q:"What is one difference between weather and climate?", a:"Weather is day-to-day; climate is the average over a long time", w:["Weather lasts longer than climate","Climate changes every day; weather stays the same","They are the same thing"], dyk:"'Climate is what you expect, weather is what you get' is a useful way to remember it."},
+  {t:'weather', d:2, q:"Why is the equator hotter than the poles?", a:"The Sun's energy is concentrated on a smaller area at the equator", w:["The equator is closer to the Sun","The poles have more cloud cover","The equator has more land than sea"], dyk:"At the poles, the same amount of sunlight spreads over a much larger curved area — so it is less intense."},
+  {t:'weather', d:2, q:"What does solar insolation mean?", a:"The Sun's energy that spreads over a surface", w:["The amount of rainfall caused by the Sun","The heat stored underground","The Sun's energy reflected by clouds"], dyk:"Insolation is short for 'incoming solar radiation' — scientists use it to measure how much solar energy reaches Earth."},
+  {t:'weather', d:3, q:"Why do the poles receive less solar energy per square metre than the equator?", a:"The Sun's rays hit the poles at a lower angle, spreading energy over a larger area", w:["The poles are further from the Sun","The poles have more ice reflecting sunlight","Clouds block more sunlight at the poles"], dyk:"This difference in solar energy is the main reason for the world's climate zones."},
+
+  // GREENHOUSE EFFECT
+  {t:'greenhouse', d:1, q:"What is the greenhouse effect?", a:"Gases in the atmosphere trap heat, keeping the Earth warm", w:["The Sun heating greenhouses","Burning fossil fuels producing heat","Deforestation causing warming"], dyk:"Without any greenhouse effect, the Earth would be about -18°C — too cold for most life."},
+  {t:'greenhouse', d:1, q:"What is a greenhouse gas?", a:"A gas that traps heat in the atmosphere", w:["A gas found only in greenhouses","A gas produced only by factories","A gas that reflects sunlight back into space"], dyk:"Water vapour is actually the most abundant greenhouse gas, but carbon dioxide gets the most attention."},
+  {t:'greenhouse', d:1, q:"Name one greenhouse gas.", a:"Carbon dioxide", w:["Oxygen","Nitrogen","Hydrogen"], dyk:"Carbon dioxide, methane, and nitrous oxide are the three main greenhouse gases from human activity."},
+  {t:'greenhouse', d:2, q:"Name three greenhouse gases.", a:"Carbon dioxide, methane, nitrous oxide", w:["Oxygen, nitrogen, hydrogen","Carbon monoxide, helium, steam","Ozone, argon, neon"], dyk:"Methane is about 80 times more powerful as a greenhouse gas than carbon dioxide over 20 years."},
+  {t:'greenhouse', d:2, q:"Why is the greenhouse effect important?", a:"It traps heat in the atmosphere and keeps Earth at a temperature that supports life", w:["It destroys harmful gases in the atmosphere","It produces oxygen for plants","It keeps the oceans from freezing"], dyk:"The enhanced greenhouse effect — caused by humans adding extra gases — is what drives climate change."},
+  {t:'greenhouse', d:3, q:"What is the difference between the natural greenhouse effect and the enhanced greenhouse effect?", a:"The natural greenhouse effect keeps Earth warm naturally; the enhanced effect is caused by extra greenhouse gases from human activity making it too warm", w:["They are the same thing","The natural effect causes warming; the enhanced effect causes cooling","The enhanced effect only happens in summer"], dyk:"Human emissions have increased CO₂ in the atmosphere by over 50% since the Industrial Revolution."},
+
+  // ICE AGES
+  {t:'iceage', d:1, q:"What is an Ice Age?", a:"A period millions of years ago when the Earth was much colder", w:["A period when volcanoes covered the Earth in ice","A period when the Sun stopped shining","A period when the oceans froze completely"], dyk:"During the last Ice Age, ice sheets covered much of northern Europe — including where London is now."},
+  {t:'iceage', d:2, q:"What is one piece of evidence scientists use to know Ice Ages happened?", a:"Ice sheets and glacial deposits left behind", w:["Written records from the time","Photographs taken by early scientists","Newspaper reports from millions of years ago"], dyk:"Scientists also study ancient ice cores — bubbles of trapped air inside them contain the atmosphere from thousands of years ago."},
+  {t:'iceage', d:2, q:"What does evidence of ice sheets tell scientists?", a:"That temperatures were much colder in the past, showing climate has changed naturally", w:["That humans caused climate change millions of years ago","That the oceans were larger in the past","That the poles have always been the same temperature"], dyk:"Ice cores from Antarctica contain climate records going back 800,000 years."},
+  {t:'iceage', d:3, q:"Why is evidence of past Ice Ages important for understanding climate change today?", a:"It shows climate has always changed naturally, but scientists can compare past rates of change with today's much faster human-caused changes", w:["It proves humans are not causing climate change","It shows climate change is not real","It proves volcanic eruptions cause all climate change"], dyk:"The current rate of warming is about 10 times faster than any natural warming coming out of an Ice Age."},
+
+  // NATURAL CAUSES
+  {t:'natural', d:1, q:"Name one natural cause of climate change.", a:"Volcanic eruptions", w:["Burning coal","Deforestation","Car exhausts"], dyk:"Large volcanic eruptions can temporarily cool the Earth by releasing particles that block sunlight."},
+  {t:'natural', d:2, q:"Name three natural causes of climate change.", a:"Volcanic eruptions, changes in Earth's orbit, changes in solar output", w:["Deforestation, fossil fuels, farming","Floods, droughts, wildfires","Urbanisation, industry, transport"], dyk:"Xav noted volcanic eruptions, floods, and wildfires — floods and wildfires are actually effects of climate change, not causes."},
+  {t:'natural', d:2, q:"How do volcanic eruptions affect climate?", a:"They release gases and particles that can cool the Earth temporarily by blocking sunlight", w:["They warm the Earth by releasing lava","They increase rainfall","They produce oxygen that warms the atmosphere"], dyk:"The eruption of Mount Pinatubo in 1991 cooled global temperatures by about 0.5°C for two years."},
+  {t:'natural', d:3, q:"What is the difference between natural and human causes of climate change?", a:"Natural causes have always existed and change climate slowly; human causes are new and are changing climate much faster", w:["Natural causes warm the Earth; human causes cool it","They are the same speed","Natural causes are more powerful than human causes"], dyk:"Scientists can tell that current warming is human-caused because natural factors alone cannot explain the speed of change."},
+
+  // HUMAN CAUSES
+  {t:'human', d:1, q:"What are fossil fuels?", a:"Coal, oil and gas", w:["Wood, peat and charcoal","Solar, wind and water","Uranium, plutonium and hydrogen"], dyk:"Fossil fuels formed over millions of years from the remains of ancient plants and animals."},
+  {t:'human', d:1, q:"What is deforestation?", a:"When humans cut down trees", w:["When trees grow too tall","When forests are flooded","When animals eat tree bark"], dyk:"Forests absorb CO₂ — cutting them down releases stored carbon AND removes the thing that was absorbing it."},
+  {t:'human', d:1, q:"What is urbanisation?", a:"When people move from rural areas to cities", w:["When cities are knocked down","When forests are turned into farms","When people move from cities to the countryside"], dyk:"More than half of the world's population now lives in cities — this is expected to reach two-thirds by 2050."},
+  {t:'human', d:2, q:"Name three human causes of climate change.", a:"Burning fossil fuels, deforestation, farming (livestock)", w:["Volcanic eruptions, solar changes, orbital changes","Flooding, wildfires, drought","Ice ages, solar storms, tidal changes"], dyk:"Agriculture accounts for around 10–12% of global greenhouse gas emissions, mainly from livestock and rice farming."},
+  {t:'human', d:2, q:"Why does burning fossil fuels cause climate change?", a:"It releases extra carbon dioxide into the atmosphere, increasing the greenhouse effect", w:["It produces smoke that blocks the Sun","It makes the oceans warmer directly","It destroys the ozone layer"], dyk:"Humans burn about 15 billion tonnes of fossil fuels every year."},
+  {t:'human', d:2, q:"Why does deforestation increase climate change?", a:"Trees absorb CO₂ — cutting them down means more CO₂ stays in the atmosphere, and burning them releases even more", w:["Trees produce methane that cools the Earth","Fewer trees mean more rainfall","Deforestation increases oxygen levels"], dyk:"The Amazon rainforest absorbs about 2 billion tonnes of CO₂ per year."},
+  {t:'human', d:3, q:"What is the Anthropocene?", a:"A proposed geological era in which human activity has become the dominant influence on Earth's climate and environment", w:["A period millions of years ago when the Earth was very hot","An era named after Antarctica","A geological period before humans existed"], dyk:"The word Anthropocene comes from the Greek 'anthropos' meaning human, and 'kainos' meaning new."},
+
+  // EFFECTS OF CHANGE
+  {t:'effects', d:1, q:"Which country is most vulnerable to rising sea levels and why?", a:"The Maldives — because much of it is only about one metre above sea level", w:["Russia — because it has a long coastline","Brazil — because it is close to the equator","Canada — because it is near the Arctic"], dyk:"The Maldives has a population of about 500,000 people — all at risk from rising seas."},
+  {t:'effects', d:2, q:"Why is the Maldives particularly vulnerable to climate change?", a:"It is very low-lying — only about one metre above sea level — making it easy to flood", w:["It has too many volcanoes","It gets too little rainfall","It is too hot for people to live there already"], dyk:"The government of the Maldives has considered buying land in other countries to relocate its population."},
+  {t:'effects', d:2, q:"Name two effects of climate change.", a:"Rising sea levels and more extreme weather events", w:["Cooler summers and more snowfall","Less flooding and more stable weather","More glaciers forming and oceans cooling"], dyk:"Scientists predict sea levels could rise by up to 1 metre by 2100 — threatening millions of coastal homes."},
+  {t:'effects', d:3, q:"Why do low-lying islands face a greater threat from climate change than mountainous countries?", a:"Rising sea levels could completely flood low-lying islands, while mountainous areas stay above the water", w:["Mountains warm up faster than islands","Islands are further from industrial pollution","Sea levels only rise near the equator"], dyk:"Some Pacific islands, such as Tuvalu, could be entirely uninhabitable within decades due to sea level rise."},
+
+  // RESPONSES
+  {t:'responses', d:1, q:"What is renewable energy?", a:"Energy from sources that can be naturally replenished, such as solar, wind and water", w:["Energy made from burning coal","Energy stored in batteries","Energy produced by nuclear power only"], dyk:"The UK generated over 40% of its electricity from renewables in 2023 — mainly wind power."},
+  {t:'responses', d:1, q:"Give three examples of renewable energy sources.", a:"Solar panels, wind turbines, hydroelectricity", w:["Coal, oil and gas","Nuclear, gas and oil","Wood, peat and coal"], dyk:"Iceland gets nearly 100% of its electricity from renewables — mainly geothermal and hydroelectric power."},
+  {t:'responses', d:2, q:"Why is switching to renewable energy a response to climate change?", a:"Renewable energy produces no greenhouse gases when generating electricity, reducing the enhanced greenhouse effect", w:["Renewables cool the atmosphere directly","Renewables remove existing CO₂ from the air","Renewables replace the need for all fossil fuels immediately"], dyk:"Solar power is now the cheapest source of electricity in history — cheaper than coal in most countries."},
+  {t:'responses', d:2, q:"Name two ways individuals can respond to climate change.", a:"Using renewable energy at home and reducing car use", w:["Flying more and buying more products","Building more factories","Burning more wood for heating"], dyk:"Switching to a plant-based diet is one of the single biggest individual actions to reduce carbon emissions."},
+  {t:'responses', d:3, q:"What is the difference between mitigation and adaptation as responses to climate change?", a:"Mitigation reduces the causes of climate change (e.g. cutting emissions); adaptation changes how we live to cope with its effects (e.g. building sea walls)", w:["They are the same thing","Mitigation speeds up climate change; adaptation slows it","Adaptation reduces emissions; mitigation copes with effects"], dyk:"Both are needed — we must reduce emissions AND adapt to changes that are already locked in."},
+];
+
+const selectedTopics = new Set();
+let difficulty = 'medium';
+const TOTAL_Q = 15, TIME_PER_Q = 45;
+let score, streak, bestStreak, numCorrect, numWrong, timeLeft, timerInterval, qNumber, answered, gamePool, usedIdx;
+
+const topicGrid = document.getElementById('topicGrid');
+Object.entries(TOPICS).forEach(([key, label]) => {
+  const btn = document.createElement('button');
+  btn.className = 'topic-btn';
+  btn.textContent = label;
+  btn.onclick = () => toggleTopic(key, btn);
+  topicGrid.appendChild(btn);
+});
+
+function toggleTopic(key, btn) {
+  if (selectedTopics.has(key)) { selectedTopics.delete(key); btn.classList.remove('selected'); }
+  else { selectedTopics.add(key); btn.classList.add('selected'); }
+  document.getElementById('startBtn').disabled = selectedTopics.size === 0;
+}
+function selectAllTopics() {
+  document.querySelectorAll('.topic-btn').forEach((btn, i) => { selectedTopics.add(Object.keys(TOPICS)[i]); btn.classList.add('selected'); });
+  document.getElementById('startBtn').disabled = false;
+}
+function selectNoneTopics() {
+  document.querySelectorAll('.topic-btn').forEach(btn => btn.classList.remove('selected'));
+  selectedTopics.clear();
+  document.getElementById('startBtn').disabled = true;
+}
+function setDiff(d) {
+  difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('diff-' + d).classList.add('selected');
+}
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+function startGame() {
+  score = 0; streak = 0; bestStreak = 0; numCorrect = 0; numWrong = 0; qNumber = 0;
+  const diffMap = { easy: 1, medium: 2, hard: 3 };
+  const dLevel = diffMap[difficulty];
+  let pool = ALL_Q.filter(q => selectedTopics.has(q.t) && q.d <= dLevel);
+  if (pool.length < 5) pool = ALL_Q.filter(q => selectedTopics.has(q.t));
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  gamePool = pool;
+  usedIdx = 0;
+  showScreen('screen-game');
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (qNumber >= TOTAL_Q) { endGame(); return; }
+  qNumber++;
+  answered = false;
+  document.getElementById('feedbackText').textContent = '';
+  document.getElementById('feedbackText').className = 'feedback-text';
+  document.getElementById('streakBanner').style.display = 'none';
+  document.getElementById('didYouKnow').style.display = 'none';
+  document.getElementById('qProgress').textContent = `Question ${qNumber} of ${TOTAL_Q}`;
+
+  const q = gamePool[usedIdx % gamePool.length];
+  usedIdx++;
+  document.getElementById('qTopic').textContent = TOPICS[q.t] || '';
+  document.getElementById('questionText').textContent = q.q;
+
+  const options = [q.a, ...q.w].sort(() => Math.random() - 0.5);
+  const grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt, q.a, btn, q.dyk);
+    grid.appendChild(btn);
+  });
+
+  grid.dataset.correct = q.a;
+  grid.dataset.dyk = q.dyk || '';
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = TIME_PER_Q;
+  document.getElementById('timerDisplay').textContent = timeLeft;
+  updateTimerBar();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timerDisplay').textContent = timeLeft;
+    updateTimerBar();
+    if (timeLeft <= 0) { clearInterval(timerInterval); if (!answered) timeUp(); }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = (timeLeft / TIME_PER_Q) * 100;
+  const bar = document.getElementById('timerBar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 60 ? 'linear-gradient(90deg,#6bcb77,#ffd93d)' : pct > 30 ? 'linear-gradient(90deg,#ffd93d,#ff922b)' : 'linear-gradient(90deg,#ff922b,#ff6b6b)';
+}
+
+function checkAnswer(chosen, correct, btn, dyk) {
+  if (answered) return;
+  answered = true; clearInterval(timerInterval);
+  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    streak++; if (streak > bestStreak) bestStreak = streak; numCorrect++;
+    const pts = 10 + (streak >= 3 ? 5 : 0) + Math.floor(timeLeft / 5);
+    score += pts; updateHUD();
+    if (streak >= 3) { const banner = document.getElementById('streakBanner'); banner.textContent = `🔥 ${streak} in a row! +${pts} points!`; banner.style.display = 'block'; }
+    const msgs = ['Brilliant! ⭐', 'Nailed it! 💥', 'Yes! 🎉', 'Amazing! 🚀', 'Superstar! ✨', 'Smashed it! 💪'];
+    setFeedback(msgs[Math.floor(Math.random() * msgs.length)], 'good');
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.answer-btn').forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+    streak = 0; numWrong++; updateHUD();
+    setFeedback(`The answer was: ${correct}`, 'bad');
+  }
+  if (dyk) { document.getElementById('dykText').textContent = dyk; document.getElementById('didYouKnow').style.display = 'block'; }
+  setTimeout(nextQuestion, 2200);
+}
+
+function timeUp() {
+  answered = true;
+  document.querySelectorAll('.answer-btn').forEach(b => { b.disabled = true; if (b.textContent === document.getElementById('answerGrid').dataset.correct) b.classList.add('correct'); });
+  streak = 0; numWrong++; updateHUD();
+  setFeedback("⏰ Time's up!", 'bad');
+  const dyk = document.getElementById('answerGrid').dataset.dyk;
+  if (dyk) { document.getElementById('dykText').textContent = dyk; document.getElementById('didYouKnow').style.display = 'block'; }
+  setTimeout(nextQuestion, 2200);
+}
+
+function setFeedback(msg, cls) { const el = document.getElementById('feedbackText'); el.textContent = msg; el.className = 'feedback-text ' + cls; }
+function updateHUD() { document.getElementById('scoreDisplay').textContent = score; document.getElementById('streakDisplay').textContent = streak; }
+
+function endGame() {
+  clearInterval(timerInterval);
+  const pct = Math.round((numCorrect / TOTAL_Q) * 100);
+  const emojis = pct >= 90 ? '🏆' : pct >= 70 ? '🌟' : pct >= 50 ? '💪' : '🎮';
+  const subs = pct >= 90 ? 'Absolutely incredible, Xav!' : pct >= 70 ? 'Really great work!' : pct >= 50 ? 'Good effort — keep going!' : 'Practice makes perfect!';
+  document.getElementById('resultsEmoji').textContent = emojis;
+  document.getElementById('resultsScore').textContent = score;
+  document.getElementById('resultsSub').textContent = subs;
+  document.getElementById('statCorrect').textContent = numCorrect;
+  document.getElementById('statWrong').textContent = numWrong;
+  document.getElementById('statBest').textContent = bestStreak;
+  if (pct >= 70) launchConfetti();
+  showScreen('screen-results');
+}
+
+function goHome() { clearInterval(timerInterval); showScreen('screen-start'); }
+
+function launchConfetti() {
+  const colours = ['#ffd93d', '#ff6b6b', '#6bcb77', '#4dcc88', '#845ef7', '#ff922b'];
+  for (let i = 0; i < 70; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div'); p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;background:${colours[Math.floor(Math.random()*colours.length)]};--fall:${1.5+Math.random()*2}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(p); setTimeout(() => p.remove(), 4000);
+    }, i * 35);
+  }
+}
+</script>
+</body>
+</html>
